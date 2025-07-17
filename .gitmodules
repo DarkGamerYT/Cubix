@@ -1,0 +1,10 @@
+[submodule "cubix/src-deps/RakNet"]
+	path = cubix/src-deps/RakNet
+	url = https://github.com/DarkGamerYT/RakNet
+[submodule "cubix/src-deps/rapidjson"]
+	path = cubix/src-deps/rapidjson
+	url = https://github.com/heitbaum/rapidjson
+	branch = patch-1
+[submodule "cubix/src-deps/zlib"]
+	path = cubix/src-deps/zlib
+	url = https://github.com/madler/zlib
