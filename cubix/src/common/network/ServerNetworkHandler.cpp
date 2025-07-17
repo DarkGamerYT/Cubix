@@ -322,12 +322,12 @@ void ServerNetworkHandler::handle(
         return;
     };
 
-    CompressionType compressionAlgorithm = CompressionType::None;
-    uint16_t compressionThreshold = 0x00;
+    constexpr auto compressionAlgorithm = CompressionType::Zlib;
+    constexpr uint16_t compressionThreshold = 0x01;
 
     NetworkSettingsPacket networkSettings;
     networkSettings.compressionThreshold = compressionThreshold;
-    networkSettings.compressionAlgorithm = static_cast<uint16_t>(compressionAlgorithm);
+    networkSettings.compressionAlgorithm = compressionAlgorithm;
     networkSettings.clientThrottle = false;
     networkSettings.clientThrottleThreshold = 0;
     networkSettings.clientThrottleScalar = 0.0f;

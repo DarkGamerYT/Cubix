@@ -125,53 +125,41 @@ void RakNetServer::update()
                 bitStream.erase(bitStream.begin());
 
                 BinaryStream stream(bitStream);
+                networkPeer->receivePacket(stream);
+
                 while (true)
-                {
-                    if (stream.bytesLeft() == 0)
-                        break;
-
-                    networkPeer->receivePacket(stream);
-
-                    const uint32_t payloadSize = stream.readUnsignedVarInt();
-                    //Logger::log(Logger::LogLevel::Debug, "Payload size: {}, Bytes left: {}", payloadSize, stream.bytesLeft());
-
+                    try
                     {
-                        BinaryStream packetStream = stream;
-                        uint32_t packetHeader = packetStream.readUnsignedVarInt();
+                        if (stream.bytesLeft() == 0)
+                            break;
 
-                        auto packetId = static_cast<MinecraftPacketIds>(packetHeader & 0x03FF);
-                        uint8_t subClientSenderId = (packetHeader >> 10) & 0x03;
-                        auto subClientTargetId = static_cast<SubClientId>((packetHeader >> 12) & 0x03);
+                        const uint32_t payloadSize = stream.readUnsignedVarInt();
+                        if (payloadSize < 1)
+                            continue;
 
-                        if (packetId != MinecraftPacketIds::PlayerAuthInputPacket)
+                        if (stream.bytesLeft() < payloadSize)
                         {
-                            Logger::log(Logger::LogLevel::Debug,
-                                "Packet Id: {}, Sender Id: {}, Target Id: {}", static_cast<uint16_t>(packetId), subClientSenderId, static_cast<uint8_t>(subClientTargetId));
-                        };
-                    };
-
-                    if (stream.bytesLeft() < payloadSize)
-                    {
-                        Logger::log(Logger::LogLevel::Error,
+                            Logger::log(Logger::LogLevel::Error,
                             "Payload size of {} is larger than what's left: {}", payloadSize, stream.bytesLeft());
+                            continue;
+                        };
 
+                        using difference = std::vector<unsigned char>::difference_type;
+                        const auto start = stream.m_Stream.begin() + static_cast<difference>(stream.m_ReadPos);
+                        const auto end = std::next(start, payloadSize);
+
+                        std::vector<uint8_t> payload{ start, end };
+                        stream.m_ReadPos += payloadSize;
+
+                        BinaryStream packetStream(payload);
+                        this->m_Network->handle(networkIdentifier, packetStream);
+                    }
+                    catch (...)
+                    {
                         this->disconnectClient(networkIdentifier, SubClientId::PrimaryClient,
                             DisconnectReason::BadPacket,
                             false, "%disconnectionScreen.badPacket");
-                        break;
                     };
-
-                    using difference = std::vector<unsigned char>::difference_type;
-                    const auto start = stream.m_Stream.begin() + static_cast<difference>(stream.m_ReadPos);
-                    const auto end = std::next(start, payloadSize);
-
-                    std::vector<uint8_t> payload{ start, end };
-                    stream.m_ReadPos += payloadSize;
-
-                    BinaryStream packetStream(payload);
-                    this->m_Network->handle(networkIdentifier, packetStream);
-                    break; // Will be removed once we implement all the packets
-                };
                 break;
             };
 

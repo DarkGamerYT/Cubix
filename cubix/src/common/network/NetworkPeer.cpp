@@ -1,44 +1,57 @@
 #include "NetworkPeer.hpp"
 #include "NetworkServer.hpp"
-BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream)
-{
+#include "RakMemoryOverride.h"
+
+BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
+    CompressionType compressionType = this->m_Compression;
     if (this->isCompressed())
     {
-        stream.readByte();
+        const auto& byte = stream.readByte();
+        compressionType = static_cast<CompressionType>(byte);
     };
 
-    switch (this->m_Compression)
+    switch (compressionType)
     {
         case CompressionType::Zlib:
         {
-            const uint32_t compressedSize = stream.readUnsignedVarInt();
-            const uint8_t* compressedData = stream.readBytes(compressedSize);
-
             BinaryStream binaryStream{};
-            if (compressedSize < this->m_CompressionThreshold) {
-                binaryStream.writeUnsignedVarInt(compressedSize);
-                binaryStream.writeBytes(compressedData, compressedSize);
 
+            const uint32_t unreadBytes = stream.bytesLeft();
+            Bytef* compressedData = stream.m_Stream.data() + stream.m_ReadPos;
+
+            z_stream zStream = {};
+            zStream.next_in = compressedData;
+            zStream.avail_in = unreadBytes;
+
+            if (inflateInit2(&zStream, -MAX_WBITS) != Z_OK) {
                 stream = binaryStream;
                 break;
             };
 
-            constexpr uLongf maxDecompressedSize = 2 * 1024 * 1024;
-            std::vector<uint8_t> decompressedBuffer(maxDecompressedSize);
-            uLongf decompressedSize = maxDecompressedSize;
+            std::vector<uint8_t> decompressedData;
+            int inflateResult = Z_OK;
 
-            const int result = uncompress(
-                decompressedBuffer.data(), &decompressedSize,
-                compressedData, compressedSize
-            );
+            do {
+                constexpr size_t chunkSize = 4096;
+                const size_t startSize = decompressedData.size();
+                decompressedData.resize(startSize + chunkSize);
 
-            if (result != Z_OK) {
+                zStream.next_out = decompressedData.data() + startSize;
+                zStream.avail_out = chunkSize;
+
+                inflateResult = inflate(&zStream, Z_NO_FLUSH);
+            } while (inflateResult == Z_OK);
+
+            inflateEnd(&zStream);
+
+            if (inflateResult != Z_STREAM_END) {
                 stream = binaryStream;
                 break;
             };
 
-            binaryStream.writeUnsignedVarInt(decompressedSize);
-            binaryStream.writeBytes(decompressedBuffer.data(), decompressedSize);
+            decompressedData.resize(zStream.total_out); // Trim excess
+
+            binaryStream.writeBytes(decompressedData.data(), decompressedData.size());
             stream = binaryStream;
             break;
         };
@@ -54,16 +67,11 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream)
     return stream;
 };
 
-void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPeer::Reliability reliability)
-{
+void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPeer::Reliability reliability) const {
     BinaryStream packetStream;
     packetStream.writeByte(0xFE);
 
-    if (this->isCompressed())
-        packetStream.writeByte(static_cast<uint8_t>(this->m_Compression));
-
     BinaryStream dataStream;
-
     {
         uint16_t packetHeader = 0;
         const auto packetId = static_cast<uint16_t>(packet.getId());
@@ -82,48 +90,63 @@ void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPee
         dataStream.writeUnsignedVarInt(packetHeader);
     };
 
+    // Write packet data
     packet.write(dataStream);
 
     const size_t rawSize = dataStream.size();
-    switch (this->m_Compression)
+    CompressionType compressionType = this->m_Compression;
+
+    if (this->isCompressed())
+    {
+        if (rawSize < this->m_CompressionThreshold)
+            compressionType = CompressionType::None;
+
+        packetStream.writeByte(static_cast<uint8_t>(compressionType));
+    };
+
+    BinaryStream binaryStream{};
+    binaryStream.writeUnsignedVarInt(rawSize);
+    binaryStream.writeBytes(dataStream.data(), rawSize);
+
+    switch (compressionType)
     {
         case CompressionType::Disabled:
         case CompressionType::None:
         {
-            // Write both game packet data and header size
-            packetStream.writeUnsignedVarInt(rawSize);
-            packetStream.writeBytes(dataStream.data(), rawSize);
+            packetStream.writeBytes(binaryStream.data(), binaryStream.size());
             break;
         };
         case CompressionType::Zlib:
         {
-            if (rawSize >= this->m_CompressionThreshold)
-            {
-                uLong destSize = compressBound(rawSize);
-                std::vector<uint8_t> compressedData(destSize);
+            z_stream zStream{};
+            if (deflateInit2(&zStream, Z_BEST_SPEED, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY) != Z_OK)
+                throw std::runtime_error("Failed to initialize Zlib compressor");
 
-                const int result = compress2(
-                    compressedData.data(), &destSize,
-                    dataStream.data(), rawSize,
-                    Z_BEST_SPEED
-                );
+            zStream.next_in = const_cast<Bytef*>(binaryStream.data());
+            zStream.avail_in = binaryStream.size();
 
-                if (result != Z_OK) {
-                    packetStream.writeUnsignedVarInt(rawSize);
-                    packetStream.writeBytes(dataStream.data(), rawSize);
-                    break;
+            std::vector<uint8_t> compressedData;
+            int deflateResult;
+
+            do {
+                constexpr size_t chunkSize = 4096;
+                const size_t currentSize = compressedData.size();
+                compressedData.resize(currentSize + chunkSize);
+
+                zStream.next_out = compressedData.data() + currentSize;
+                zStream.avail_out = chunkSize;
+
+                deflateResult = deflate(&zStream, Z_FINISH);
+                if (deflateResult == Z_STREAM_ERROR) {
+                    deflateEnd(&zStream);
+                    throw std::runtime_error("Zlib compression stream error");
                 };
+            } while (deflateResult != Z_STREAM_END);
 
-                // Write compressed size, then data
-                packetStream.writeUnsignedVarInt(destSize);
-                packetStream.writeBytes(compressedData.data(), destSize);
-            }
-            else
-            {
-                // Below threshold, send raw
-                packetStream.writeUnsignedVarInt(rawSize);
-                packetStream.writeBytes(dataStream.data(), rawSize);
-            };
+            deflateEnd(&zStream);
+            compressedData.resize(zStream.total_out); // Trim to actual size
+
+            packetStream.writeBytes(compressedData.data(), compressedData.size());
             break;
         };
         case CompressionType::Snappy:

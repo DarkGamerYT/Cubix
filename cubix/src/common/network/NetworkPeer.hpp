@@ -35,8 +35,8 @@ public:
     NetworkPeer(const NetworkIdentifier& networkIdentifier, NetworkServer* serverLocator)
         : m_NetworkIdentifier(networkIdentifier), m_NetworkServer(serverLocator) {};
 
-    BinaryStream& receivePacket(BinaryStream&);
-    void sendPacket(Packet&, SubClientId, NetworkPeer::Reliability = Reliability::ReliableOrdered);
+    BinaryStream& receivePacket(BinaryStream&) const;
+    void sendPacket(Packet&, SubClientId, NetworkPeer::Reliability = Reliability::ReliableOrdered) const;
 
     NetworkServer* getNetworkServer() const { return this->m_NetworkServer; };
     const NetworkIdentifier& getNetworkIdentifier() const { return this->m_NetworkIdentifier; };
