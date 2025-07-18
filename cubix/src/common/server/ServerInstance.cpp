@@ -76,18 +76,20 @@ void ServerInstance::runCommand(const std::string& command, const CommandOrigin&
 
 void ServerInstance::shutdown()
 {
-    if (m_InstanceState != InstanceState::Running)
+    if (this->m_InstanceState != InstanceState::Running)
         return;
 
     Logger::log(Logger::LogLevel::Info, "Shutting down server...");
 
-    m_InstanceState = InstanceState::Stopped;
+    this->m_InstanceState.store(InstanceState::Stopped);
+    this->m_InstanceState.notify_all();
     this->m_Network->shutdown();
 };
 
 void ServerInstance::startServerThread()
 {
-    this->m_InstanceState = InstanceState::Running;
+    this->m_InstanceState.store(InstanceState::Running);
+    this->m_InstanceState.notify_all();
     this->m_Network->initializeNetwork();
 
     std::thread serverThread([&](ServerInstance* p_ServerInstance) {

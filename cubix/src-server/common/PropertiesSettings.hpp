@@ -2,6 +2,7 @@
 #define PROPERTIES_SETTINGS_HPP
 
 #include <algorithm>
+#include <functional>
 #include <cctype>
 #include <iostream>
 #include <fstream>

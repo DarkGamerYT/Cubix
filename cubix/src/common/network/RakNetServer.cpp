@@ -39,10 +39,11 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
                 while (pServerLocator->m_pPeerInterface->IsActive())
                 {
                     const std::string& message = pServerLocator->m_UnconnectedPong;
-                    if (message.empty())
-                        continue;
+                    if (!message.empty())
+                    {
+                        pServerLocator->m_pPeerInterface->SetOfflinePingResponse(message.c_str(), static_cast<unsigned int>(message.size()));
+                    };
 
-                    pServerLocator->m_pPeerInterface->SetOfflinePingResponse(message.c_str(), static_cast<unsigned int>(message.size()));
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 };
             }, this).detach();
@@ -140,7 +141,7 @@ void RakNetServer::update()
                         if (stream.bytesLeft() < payloadSize)
                         {
                             Logger::log(Logger::LogLevel::Error,
-                            "Payload size of {} is larger than what's left: {}", payloadSize, stream.bytesLeft());
+                                "Payload size of {} is larger than what's left: {}", payloadSize, stream.bytesLeft());
                             continue;
                         };
 

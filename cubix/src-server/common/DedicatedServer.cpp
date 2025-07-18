@@ -99,10 +99,7 @@ void DedicatedServer::start()
         };
     }, &m_ServerInstance).detach();
 
-    while (m_ServerInstance.getInstanceState() == ServerInstance::InstanceState::Running)
-    {
-
-    };
+    m_ServerInstance.waitUntil(ServerInstance::InstanceState::Stopped);
 };
 
 void DedicatedServer::shutdown()

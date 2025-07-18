@@ -42,8 +42,15 @@ public:
     void startServerThread();
     void shutdown();
 
-    InstanceState getInstanceState() const { return this->m_InstanceState; };
     int getCurrentTick() const { return this->m_CurrentTick; };
+    InstanceState getInstanceState() const { return this->m_InstanceState.load(); };
+    void waitUntil(const InstanceState desired) const {
+        InstanceState current = this->m_InstanceState.load();
+        while (current != desired) {
+            this->m_InstanceState.wait(current);
+            current = this->m_InstanceState.load();
+        };
+    };
 
     void onTick(int) const;
     void runCommand(const std::string& command, const CommandOrigin&/*, CommandOutput&*/);

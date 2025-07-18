@@ -1,4 +1,5 @@
 #include "PropertiesSettings.hpp"
+
 static std::string trim(std::string& value)
 {
     value.erase(0, std::min(value.find_first_not_of(" \t"), value.size()));
@@ -67,81 +68,86 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
         // Trim the value
         trim(value);
 
-        if (key == "gamemode")
-            this->m_GameMode = value;
+        static const std::unordered_map<std::string, std::function<void(std::string)>> actions = {
+            { "gamemode",
+                [this](const std::string& v) { this->m_GameMode = v; } },
 
-        else if (key == "difficulty")
-            this->m_Difficulty = value;
+            { "difficulty",
+                [this](const std::string& v) { this->m_Difficulty = v; } },
 
-        else if (key == "server-name")
-            this->m_ServerName = value;
+            { "server-name",
+                [this](const std::string& v) { this->m_ServerName = v; } },
 
-        else if (key == "max-players")
-            this->m_MaxPlayers = PropertiesSettings::parseInt(value);
+            { "max-players",
+                [this](const std::string& v) { this->m_MaxPlayers = PropertiesSettings::parseInt(v); } },
 
-        else if (key == "op-permission-level")
-            this->m_OpPermissionLevel = PropertiesSettings::parseInt(value);
+            { "op-permission-level",
+                [this](const std::string& v) { this->m_OpPermissionLevel = PropertiesSettings::parseInt(v); } },
 
-        else if (key == "server-port")
-            this->m_ServerPort = PropertiesSettings::parseInt(value);
+            { "server-port",
+                [this](const std::string& v) { this->m_ServerPort = PropertiesSettings::parseInt(v); } },
 
-        else if (key == "server-portv6")
-            this->m_ServerPortV6 = PropertiesSettings::parseInt(value);
+            { "server-portv6",
+                [this](const std::string& v) { this->m_ServerPortV6 = PropertiesSettings::parseInt(v); } },
 
-        else if (key == "level-name")
-            this->m_LevelName = value;
+            { "level-name",
+                [this](const std::string& v) { this->m_LevelName = v; } },
 
-        else if (key == "level-seed")
-            this->m_LevelSeed = value;
+            { "level-seed",
+                [this](const std::string& v) { this->m_LevelSeed = v; } },
 
-        else if (key == "force-gamemode")
-            this->m_ForceGameMode = PropertiesSettings::parseBoolean(value);
+            { "force-gamemode",
+                [this](const std::string& v) { this->m_ForceGameMode = PropertiesSettings::parseBoolean(v); } },
 
-        else if (key == "allow-cheats")
-            this->m_AllowCheats = PropertiesSettings::parseBoolean(value);
+            { "allow-cheats",
+                [this](const std::string& v) { this->m_AllowCheats = PropertiesSettings::parseBoolean(v); } },
 
-        else if (key == "tick-distance")
-            this->m_TickDistance = PropertiesSettings::parseInt(value);
+            { "tick-distance",
+                [this](const std::string& v) { this->m_TickDistance = PropertiesSettings::parseInt(v); } },
 
-        else if (key == "default-player-permission-level")
-        {
-            this->m_DefaultPermissionLevel = value;
+            { "player-tick-policy",
+                [this](const std::string& v) { this->m_PlayerTickPolicy = v; } },
+
+            { "allow-list",
+                [this](const std::string& v) { this->m_AllowList = PropertiesSettings::parseBoolean(v); } },
+
+            { "online-mode",
+                [this](const std::string& v) { this->m_OnlineMode = PropertiesSettings::parseBoolean(v); } },
+
+            { "enable-lan-visibility",
+                [this](const std::string& v) { this->m_IsVisibleToLan = PropertiesSettings::parseBoolean(v); } },
+
+            { "compression-threshold",
+                [this](const std::string& v) { this->m_CompressionThreshold = static_cast<short>(PropertiesSettings::parseInt(v)); } },
+
+            { "chat-restriction",
+                [this](const std::string& v) {
+                    if (v == "dropped")
+                        this->m_ChatRestrictionLevel = 1;
+                    else if (v == "disabled")
+                        this->m_ChatRestrictionLevel = 2;
+                    else this->m_ChatRestrictionLevel = 0;
+                }
+            },
+
+            { "compression-algorithm",
+                [this](const std::string& v) {
+                    if (v == "zlib")
+                        this->m_CompressionAlgorithm = 0x01;
+                    else if (v == "snappy")
+                        this->m_CompressionAlgorithm = 0x02;
+                    else this->m_CompressionAlgorithm = 0x00;
+                }
+            },
+
+            { "default-player-permission-level",
+                [this](const std::string& v) { this->m_DefaultPermissionLevel = v; } },
+        };
+
+        const auto it = actions.find(key);
+        if (it != actions.end()) {
+            it->second(value);
         }
-        else if (key == "player-tick-policy")
-        {
-            this->m_PlayerTickPolicy = value;
-        }
-
-        else if (key == "chat-restriction")
-        {
-            if (value == "dropped")
-                this->m_ChatRestrictionLevel = 1;
-            else if (value == "disabled")
-                this->m_ChatRestrictionLevel = 2;
-            else this->m_ChatRestrictionLevel = 0;
-        }
-
-        else if (key == "compression-threshold")
-            this->m_CompressionThreshold = static_cast<short>(PropertiesSettings::parseInt(value));
-
-        else if (key == "compression-algorithm")
-        {
-            if (value == "zlib")
-                this->m_CompressionAlgorithm = 0x01;
-            else if (value == "snappy")
-                this->m_CompressionAlgorithm = 0x02;
-            else this->m_CompressionAlgorithm = 0x00;
-        }
-
-        else if (key == "allow-list")
-            this->m_AllowList = PropertiesSettings::parseBoolean(value);
-
-        else if (key == "online-mode")
-            this->m_OnlineMode = PropertiesSettings::parseBoolean(value);
-
-        else if (key == "enable-lan-visibility")
-            this->m_IsVisibleToLan = PropertiesSettings::parseBoolean(value);
-        
         else {
             this->m_CustomProperties[key] = value;
         };
