@@ -5,7 +5,7 @@
 
 void StopCommand::setup() {};
 
-void StopCommand::execute(const CommandOrigin& origin/*, CommandOutput&*/) {
+void StopCommand::execute(const CommandOrigin& origin, CommandOutput& output) {
     Logger::log(Logger::LogLevel::Info, "Server stop requested.");
 
     const auto& serverInstance = origin.getServerInstance();

@@ -91,11 +91,17 @@ void DedicatedServer::start()
             if (input.empty())
                 continue;
 
+            CommandOutput output{ CommandOutputType::LastOutput };
             CommandOrigin origin{ CommandOriginType::DedicatedServer, instance, Util::UUID::randomUUID(), "" };
-            instance->runCommand(input, origin);
+            instance->runCommand(input, origin, output);
 
-            /*Logger::log(Logger::LogLevel::Error,
-                "Unknown command: {}. Please check that the command exists and that you have permission to use it.", input);*/
+            CommandOutputMessage commandMessage = output.getMessages().front();
+            if (output.getMessages().empty())
+                return;
+
+            Logger::log(
+                commandMessage.isSuccessful ? Logger::LogLevel::Info : Logger::LogLevel::Error,
+                "{}", commandMessage.message);
         };
     }, &m_ServerInstance).detach();
 

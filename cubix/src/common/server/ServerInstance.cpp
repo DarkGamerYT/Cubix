@@ -71,18 +71,18 @@ void ServerInstance::onTick(const int nTick) const
     };
 };
 
-void ServerInstance::runCommand(const std::string& command, const CommandOrigin& origin/*, CommandOutput&*/) {
+void ServerInstance::runCommand(const std::string& command, const CommandOrigin& origin, CommandOutput& output) {
     const std::vector<std::string>& arg = Util::splitString(command, "/ ");
 
     const auto& commands = CommandRegistry::getAll();
     if (!commands.contains(arg[0]))
     {
-        // "commands.generic.unknown"
+        output.error("commands.generic.unknown", { arg[0] });
         return;
     };
 
     const auto& pCommand = commands.at(arg[0]);
-    pCommand->run(origin);
+    pCommand->run(origin, output);
 };
 
 void ServerInstance::shutdown()

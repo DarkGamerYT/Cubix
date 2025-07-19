@@ -25,6 +25,6 @@ void TestCommand::setup()
     });
 };
 
-void TestCommand::execute(const CommandOrigin& origin/*, CommandOutput&*/) {
-    Logger::log(Logger::LogLevel::Debug, "TestCommand::execute() - Hello, world!");
+void TestCommand::execute(const CommandOrigin& origin, CommandOutput& output) {
+    output.success("TestCommand::execute() - Hello, world!");
 };

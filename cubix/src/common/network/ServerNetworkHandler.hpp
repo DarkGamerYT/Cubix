@@ -9,6 +9,7 @@
 #include "../world/Difficulty.hpp"
 #include "../world/level/chunk/Chunk.hpp"
 #include "../world/actor/player/Player.hpp"
+#include "../world/actor/player/SerializedSkin.hpp"
 
 #include "TransportLayer.hpp"
 #include "RakNetServer.hpp"
@@ -43,6 +44,8 @@
 #include "packets/BlockActorDataPacket.hpp"
 #include "packets/PlayerSkinPacket.hpp"
 #include "packets/CommandRequestPacket.hpp"
+#include "packets/CommandOutputPacket.hpp"
+#include "packets/ServerboundLoadingScreenPacket.hpp"
 
 class ServerInstance;
 class ServerNetworkHandler

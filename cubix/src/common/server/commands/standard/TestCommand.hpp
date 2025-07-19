@@ -8,5 +8,5 @@ public:
         : Command("Testing command", permissionLevel) {};
 
     void setup() override;
-    void execute(const CommandOrigin&/*, CommandOutput&*/) override;
+    void execute(const CommandOrigin&, CommandOutput&) override;
 };

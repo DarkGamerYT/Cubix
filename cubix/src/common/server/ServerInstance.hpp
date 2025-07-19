@@ -16,6 +16,7 @@
 #include "../network/ServerNetworkHandler.hpp"
 
 #include "PlayerTickPolicy.hpp"
+#include "commands/CommandOutput.hpp"
 
 class ServerInstance
 {
@@ -55,7 +56,7 @@ public:
     };
 
     void onTick(int) const;
-    void runCommand(const std::string& command, const CommandOrigin&/*, CommandOutput&*/);
+    void runCommand(const std::string& command, const CommandOrigin&, CommandOutput&);
 };
 
 #endif // !SERVERINSTANCE_HPP

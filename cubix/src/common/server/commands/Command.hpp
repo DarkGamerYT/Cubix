@@ -7,6 +7,7 @@
 #include "CommandFlag.hpp"
 #include "CommandOrigin.hpp"
 #include "CommandOverload.hpp"
+#include "CommandOutput.hpp"
 
 class Command
 {
@@ -25,8 +26,8 @@ public:
     ) : m_Description(description), m_PermissionLevel(permissionLevel) {};
 
     virtual void setup() = 0;
-    void run(const CommandOrigin&/*, CommandOutput&*/);
-    virtual void execute(const CommandOrigin&/*, CommandOutput&*/) = 0;
+    void run(const CommandOrigin&, CommandOutput&);
+    virtual void execute(const CommandOrigin&, CommandOutput&) = 0;
 
     std::string getDescription() const { return this->m_Description; };
     CommandPermissionLevel getPermissionLevel() const { return this->m_PermissionLevel; };

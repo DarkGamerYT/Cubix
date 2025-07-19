@@ -1,9 +1,5 @@
 #include "ServerNetworkHandler.hpp"
-
 #include "../server/ServerInstance.hpp"
-
-#include "../world/actor/player/SerializedSkin.hpp"
-#include "packets/ServerboundLoadingScreenPacket.hpp"
 
 inline AppPlatform g_AppPlatform;
 ServerNetworkHandler::ServerNetworkHandler(
@@ -54,7 +50,7 @@ void ServerNetworkHandler::shutdown() {
     if (this->m_ServerInstance->getInstanceState() == ServerInstance::InstanceState::Running)
     {
         this->m_ServerInstance->shutdown();
-    }
+    };
 };
 
 inline const std::string& serverVersion = SharedConstants::CurrentGameVersion.asString();
@@ -865,12 +861,21 @@ void ServerNetworkHandler::handle(
     Logger::log(Logger::LogLevel::Debug,
         "{} executed a command: {}", player->getDisplayName(), packet.command);
 
+    CommandOutput commandOutput{ CommandOutputType::LastOutput };
     switch (packet.commandOrigin->getType())
     {
         case CommandOriginType::Player: {
-            const PlayerCommandOrigin origin{ this->m_ServerInstance, player, packet.commandOrigin };
+            const PlayerCommandOrigin playerOrigin{ this->m_ServerInstance, player, packet.commandOrigin };
 
-            this->m_ServerInstance->runCommand(packet.command, origin);
+            this->m_ServerInstance->runCommand(packet.command, playerOrigin, commandOutput);
+
+            {
+                CommandOutputPacket commandOutputPacket;
+                commandOutputPacket.commandOrigin = std::make_unique<CommandOrigin>(playerOrigin);
+                commandOutputPacket.commandOutput = commandOutput;
+
+                player->sendNetworkPacket(commandOutputPacket);
+            };
             break;
         };
 

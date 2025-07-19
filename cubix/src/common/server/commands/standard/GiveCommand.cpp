@@ -25,6 +25,6 @@ void GiveCommand::setup()
     });
 };
 
-void GiveCommand::execute(const CommandOrigin& origin/*, CommandOutput&*/) {
-    Logger::log(Logger::LogLevel::Debug, "GiveCommand::execute() - Hello, world!");
+void GiveCommand::execute(const CommandOrigin& origin, CommandOutput& output) {
+    output.success("GiveCommand::execute() - Hello, world!");
 };

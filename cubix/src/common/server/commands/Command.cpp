@@ -1,5 +1,5 @@
 #include "Command.hpp"
-void Command::run(const CommandOrigin& origin/*, CommandOutput&*/) {
+void Command::run(const CommandOrigin& origin, CommandOutput& output) {
     switch (origin.getType())
     {
         case CommandOriginType::Player: {
@@ -10,11 +10,11 @@ void Command::run(const CommandOrigin& origin/*, CommandOutput&*/) {
                 return;
             };*/
 
-            this->execute(origin);
+            this->execute(origin, output);
             break;
         };
         default: {
-            this->execute(origin);
+            this->execute(origin, output);
             break;
         };
     }
