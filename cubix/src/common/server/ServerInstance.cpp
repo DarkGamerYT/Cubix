@@ -4,14 +4,17 @@
 #include "commands/standard/TestCommand.hpp"
 #include "commands/standard/GiveCommand.hpp"
 
-//#include "../world/block/Block.hpp"
 ServerInstance::ServerInstance()
 {
 
 };
 ServerInstance::~ServerInstance()
 {
-
+    this->shutdown();
+    if (this->m_ServerThread.joinable())
+    {
+        this->m_ServerThread.join();
+    };
 };
 
 void ServerInstance::initializeServer(
@@ -46,6 +49,8 @@ void ServerInstance::onTick(const int nTick) const
     if (this->m_InstanceState != InstanceState::Running)
         return;
 
+    std::vector<std::future<void>> tasks;
+
     //Logger::log(Logger::LogLevel::Debug, std::format("Current tick: {}", nTick));
 
     int playerTickInterval = 1;
@@ -57,7 +62,13 @@ void ServerInstance::onTick(const int nTick) const
         // Player ticks
     };
 
-    this->m_Network->onTick();
+    tasks.emplace_back(std::async(std::launch::async,
+        [&] { this->m_Network->onTick(); }));
+
+    for (auto& task : tasks)
+    {
+        task.wait();
+    };
 };
 
 void ServerInstance::runCommand(const std::string& command, const CommandOrigin& origin/*, CommandOutput&*/) {
@@ -83,6 +94,7 @@ void ServerInstance::shutdown()
 
     this->m_InstanceState.store(InstanceState::Stopped);
     this->m_InstanceState.notify_all();
+
     this->m_Network->shutdown();
 };
 
@@ -92,7 +104,7 @@ void ServerInstance::startServerThread()
     this->m_InstanceState.notify_all();
     this->m_Network->initializeNetwork();
 
-    std::thread serverThread([&](ServerInstance* p_ServerInstance) {
+    this->m_ServerThread = std::thread([&](ServerInstance* p_ServerInstance) {
         const int msPerTick = 1000 / p_ServerInstance->m_TicksPerSecond;
 
         int tickCount = 0;
@@ -123,6 +135,4 @@ void ServerInstance::startServerThread()
             };
         };
     }, this);
-
-    serverThread.detach();
 };

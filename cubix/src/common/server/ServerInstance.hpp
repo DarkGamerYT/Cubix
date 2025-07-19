@@ -2,6 +2,7 @@
 #define SERVERINSTANCE_HPP
 
 #include <thread>
+#include <future>
 #include <chrono>
 
 #include "../registry/BlockStateRegistry.hpp"
@@ -32,6 +33,7 @@ private:
     int m_CurrentTick = 0;
     PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::GREEDY;
     std::atomic<InstanceState> m_InstanceState = InstanceState::NotStarted;
+    std::thread m_ServerThread;
 
 public:
     ServerInstance();

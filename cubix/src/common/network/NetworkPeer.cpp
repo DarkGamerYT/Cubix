@@ -68,6 +68,9 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
 };
 
 void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPeer::Reliability reliability) const {
+    if (this->m_NetworkServer == nullptr)
+        return;
+
     BinaryStream packetStream;
     packetStream.writeByte(0xFE);
 

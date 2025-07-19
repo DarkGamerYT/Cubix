@@ -36,8 +36,10 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
 
             // Server announcement
             std::thread([](const RakNetServer* pServerLocator) {
-                while (pServerLocator->m_pPeerInterface->IsActive())
-                {
+                while (
+                    pServerLocator->m_pPeerInterface != nullptr
+                    && pServerLocator->m_pPeerInterface->IsActive()
+                ) {
                     const std::string& message = pServerLocator->m_UnconnectedPong;
                     if (!message.empty())
                     {
