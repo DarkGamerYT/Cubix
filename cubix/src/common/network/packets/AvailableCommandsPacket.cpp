@@ -11,7 +11,7 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
         stream.writeUnsignedVarInt(static_cast<uint32_t>(enumValues.size()));
         for (const std::string& value : enumValues)
         {
-            stream.writeString(value);
+            stream.writeString<Endianness::NetworkEndian>(value);
         };
     };
 
@@ -23,7 +23,7 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
         stream.writeUnsignedVarInt(static_cast<uint32_t>(postFixes.size()));
         for (const std::string& value : postFixes)
         {
-            stream.writeString(value);
+            stream.writeString<Endianness::NetworkEndian>(value);
         };
     };
 
@@ -33,7 +33,7 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
 
         for (const auto& name : enums)
         {
-            stream.writeString(name);
+            stream.writeString<Endianness::NetworkEndian>(name);
 
             const auto& indexes = CommandRegistry::getEnumValues(name);
             const int size = indexes.size();
@@ -68,12 +68,12 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
         for (const auto& name : softEnums)
         {
             const auto& indexes = CommandRegistry::getSoftEnumValues(name);
-            stream.writeString(name);
+            stream.writeString<Endianness::NetworkEndian>(name);
 
             stream.writeUnsignedVarInt(static_cast<uint32_t>(indexes.size()));
             for (const uint64_t index : indexes)
             {
-                stream.writeString(softEnumVales.at(index));
+                stream.writeString<Endianness::NetworkEndian>(softEnumVales.at(index));
             };
         };
     };
@@ -88,8 +88,8 @@ void AvailableCommandsPacket::writeCommands(BinaryStream& stream)
     stream.writeUnsignedVarInt(static_cast<uint32_t>(commands.size()));
     for (const auto& [name, command] : commands)
     {
-        stream.writeString(name);
-        stream.writeString(command->getDescription());
+        stream.writeString<Endianness::NetworkEndian>(name);
+        stream.writeString<Endianness::NetworkEndian>(command->getDescription());
         stream.writeUnsignedShort(static_cast<uint16_t>(command->getFlags()));
         stream.writeByte(static_cast<uint8_t>(command->getPermissionLevel()));
 
@@ -142,7 +142,7 @@ void AvailableCommandsPacket::writeParameters(
                 continue;
         };
 
-        stream.writeString(parameter.getName());
+        stream.writeString<Endianness::NetworkEndian>(parameter.getName());
         stream.writeUnsignedInt(symbol);
         stream.writeBoolean(parameter.isOptional());
         stream.writeByte(static_cast<uint8_t>(parameter.getOptions()));

@@ -103,9 +103,9 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
 };
 
 void SerializedSkin::read(BinaryStream& stream) {
-    this->m_id = stream.readString();
-    this->m_playFabId = stream.readString();
-    this->m_resourcePatch.Parse(stream.readString().c_str());
+    this->m_id = stream.readString<Endianness::NetworkEndian>();
+    this->m_playFabId = stream.readString<Endianness::NetworkEndian>();
+    this->m_resourcePatch.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
     if (this->m_resourcePatch.HasParseError())
         throw std::exception("Invalid resource patch");
 
@@ -113,7 +113,7 @@ void SerializedSkin::read(BinaryStream& stream) {
         this->m_skinImage.width = stream.readUnsignedInt();
         this->m_skinImage.height = stream.readUnsignedInt();
 
-        const auto& skinImage = stream.readString();
+        const auto& skinImage = stream.readString<Endianness::NetworkEndian>();
         this->m_skinImage.data = std::vector<uint8_t>(skinImage.begin(), skinImage.end());
     };
 
@@ -125,7 +125,7 @@ void SerializedSkin::read(BinaryStream& stream) {
             image.width = stream.readUnsignedInt();
             image.height = stream.readUnsignedInt();
 
-            const auto& animatedImage = stream.readString();
+            const auto& animatedImage = stream.readString<Endianness::NetworkEndian>();
             image.data = std::vector<uint8_t>(animatedImage.begin(), animatedImage.end());
         };
 
@@ -142,29 +142,29 @@ void SerializedSkin::read(BinaryStream& stream) {
         this->m_capeImage.width = stream.readUnsignedInt();
         this->m_capeImage.height = stream.readUnsignedInt();
 
-        const auto& capeImage = stream.readString();
+        const auto& capeImage = stream.readString<Endianness::NetworkEndian>();
         this->m_capeImage.data = std::vector<uint8_t>(capeImage.begin(), capeImage.end());
     };
 
-    this->m_geometryData.Parse(stream.readString().c_str());
+    this->m_geometryData.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
     if (this->m_geometryData.HasParseError())
         throw std::exception("Invalid geometry data");
 
-    this->m_geometryMinEngineVersion = stream.readString();
-    this->m_animationData = stream.readString();
-    this->m_capeId = stream.readString();
-    this->m_fullId = stream.readString();
-    this->m_armSize = persona::getArmSize(stream.readString());
-    this->m_skinColor = Util::Color::fromHexString(stream.readString());
+    this->m_geometryMinEngineVersion = stream.readString<Endianness::NetworkEndian>();
+    this->m_animationData = stream.readString<Endianness::NetworkEndian>();
+    this->m_capeId = stream.readString<Endianness::NetworkEndian>();
+    this->m_fullId = stream.readString<Endianness::NetworkEndian>();
+    this->m_armSize = persona::getArmSize(stream.readString<Endianness::NetworkEndian>());
+    this->m_skinColor = Util::Color::fromHexString(stream.readString<Endianness::NetworkEndian>());
 
     const uint32_t piecesSize = stream.readUnsignedInt();
     for (uint32_t i = 0; i < piecesSize; i++)
     {
-        const auto& pieceId = stream.readString();
-        const auto& pieceType = stream.readString();
-        const auto& packId = stream.readString();
+        const auto& pieceId = stream.readString<Endianness::NetworkEndian>();
+        const auto& pieceType = stream.readString<Endianness::NetworkEndian>();
+        const auto& packId = stream.readString<Endianness::NetworkEndian>();
         const auto& isDefault = stream.readBoolean();
-        const auto& productId = stream.readString();
+        const auto& productId = stream.readString<Endianness::NetworkEndian>();
 
         this->m_personaPieces.emplace_back(
             pieceId,
@@ -176,12 +176,12 @@ void SerializedSkin::read(BinaryStream& stream) {
     const uint32_t tintsSize = stream.readUnsignedInt();
     for (uint32_t i = 0; i < tintsSize; i++)
     {
-        const auto& pieceType = stream.readString();
+        const auto& pieceType = stream.readString<Endianness::NetworkEndian>();
         TintColorMap colorMap;
 
         const uint32_t colorsSize = stream.readUnsignedInt();
         for (uint32_t j = 0; j < colorsSize; j++)
-            colorMap[j] = Util::Color::fromHexString(stream.readString());
+            colorMap[j] = Util::Color::fromHexString(stream.readString<Endianness::NetworkEndian>());
 
         this->m_pieceTintColors.emplace(
             persona::getPieceType(pieceType), colorMap);
@@ -195,16 +195,16 @@ void SerializedSkin::read(BinaryStream& stream) {
 };
 
 void SerializedSkin::write(BinaryStream& stream) {
-    stream.writeString(this->m_id);
-    stream.writeString(this->m_playFabId);
-    stream.writeString(Json::toString(this->m_resourcePatch));
+    stream.writeString<Endianness::NetworkEndian>(this->m_id);
+    stream.writeString<Endianness::NetworkEndian>(this->m_playFabId);
+    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->m_resourcePatch));
 
     {
         stream.writeUnsignedInt(this->m_skinImage.width);
         stream.writeUnsignedInt(this->m_skinImage.height);
 
         const auto& data = this->m_skinImage.data;
-        stream.writeString(
+        stream.writeString<Endianness::NetworkEndian>(
             std::string(data.begin(), data.end()));
     };
 
@@ -215,7 +215,7 @@ void SerializedSkin::write(BinaryStream& stream) {
         stream.writeUnsignedInt(animatedImage.image.height);
 
         const auto& data = animatedImage.image.data;
-        stream.writeString(
+        stream.writeString<Endianness::NetworkEndian>(
             std::string(data.begin(), data.end()));
 
         stream.writeUnsignedInt(static_cast<uint32_t>(animatedImage.type));
@@ -228,38 +228,38 @@ void SerializedSkin::write(BinaryStream& stream) {
         stream.writeUnsignedInt(this->m_capeImage.height);
 
         const auto& data = this->m_capeImage.data;
-        stream.writeString(
+        stream.writeString<Endianness::NetworkEndian>(
             std::string(data.begin(), data.end()));
     };
 
-    stream.writeString(Json::toString(this->m_geometryData));
-    stream.writeString(this->m_geometryMinEngineVersion);
-    stream.writeString(this->m_animationData);
-    stream.writeString(this->m_capeId);
-    stream.writeString(this->m_fullId);
-    stream.writeString(persona::getArmSize(this->m_armSize));
-    stream.writeString(this->m_skinColor.toHexString());
+    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->m_geometryData));
+    stream.writeString<Endianness::NetworkEndian>(this->m_geometryMinEngineVersion);
+    stream.writeString<Endianness::NetworkEndian>(this->m_animationData);
+    stream.writeString<Endianness::NetworkEndian>(this->m_capeId);
+    stream.writeString<Endianness::NetworkEndian>(this->m_fullId);
+    stream.writeString<Endianness::NetworkEndian>(persona::getArmSize(this->m_armSize));
+    stream.writeString<Endianness::NetworkEndian>(this->m_skinColor.toHexString());
 
     stream.writeUnsignedInt(static_cast<uint32_t>(this->m_personaPieces.size()));
     for (const auto& personaPiece : this->m_personaPieces)
     {
-        stream.writeString(personaPiece.pieceId);
-        stream.writeString(persona::getPieceType(personaPiece.pieceType));
-        stream.writeString(personaPiece.packId.toString());
+        stream.writeString<Endianness::NetworkEndian>(personaPiece.pieceId);
+        stream.writeString<Endianness::NetworkEndian>(persona::getPieceType(personaPiece.pieceType));
+        stream.writeString<Endianness::NetworkEndian>(personaPiece.packId.toString());
         stream.writeBoolean(personaPiece.isDefault);
-        stream.writeString(personaPiece.productId);
+        stream.writeString<Endianness::NetworkEndian>(personaPiece.productId);
     };
 
     stream.writeUnsignedInt(static_cast<uint32_t>(this->m_pieceTintColors.size()));
     for (const auto& tintColor : this->m_pieceTintColors)
     {
-        stream.writeString(persona::getPieceType(tintColor.first));
+        stream.writeString<Endianness::NetworkEndian>(persona::getPieceType(tintColor.first));
 
         TintColorMap colorMap = tintColor.second;
 
         stream.writeUnsignedInt(static_cast<uint32_t>(colorMap.size()));
         for (size_t i = 0; i < colorMap.size(); i++)
-            stream.writeString(colorMap[i].toHexString());
+            stream.writeString<Endianness::NetworkEndian>(colorMap[i].toHexString());
     };
 
     stream.writeBoolean(this->m_isPremium);

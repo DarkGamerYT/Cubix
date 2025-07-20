@@ -5,7 +5,7 @@ void ResourcePackClientResponsePacket::read(BinaryStream& stream)
 
     uint32_t arraySize = stream.readUnsignedVarInt();
     for (uint32_t i = 0; i < arraySize; i++)
-        this->packIds.emplace_back(stream.readString());
+        this->packIds.emplace_back(stream.readString<Endianness::NetworkEndian>());
 };
 
 void ResourcePackClientResponsePacket::write(BinaryStream& stream)
@@ -14,5 +14,5 @@ void ResourcePackClientResponsePacket::write(BinaryStream& stream)
 
     stream.writeUnsignedVarInt(static_cast<uint32_t>(this->packIds.size()));
     for (const std::string& packId : this->packIds)
-        stream.writeString(packId);
+        stream.writeString<Endianness::NetworkEndian>(packId);
 };

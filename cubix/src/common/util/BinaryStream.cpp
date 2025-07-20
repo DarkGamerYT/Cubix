@@ -19,10 +19,10 @@ void BinaryStream::writeItem(const Item& item, bool includeNetId)
     Nbt::write<Endianness::NetworkEndian>(dataBuffer, tag.copy());
 
     for (const std::string& value : item.getCanPlaceOn())
-        dataBuffer.writeString(value);
+        dataBuffer.writeString<Endianness::NetworkEndian>(value);
 
     for (const std::string& value : item.getCanBreak())
-        dataBuffer.writeString(value);
+        dataBuffer.writeString<Endianness::NetworkEndian>(value);
 
 
     size_t streamSize = dataBuffer.size();

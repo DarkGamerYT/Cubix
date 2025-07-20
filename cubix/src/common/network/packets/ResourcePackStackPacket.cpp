@@ -9,27 +9,27 @@ void ResourcePackStackPacket::write(BinaryStream& stream)
     stream.writeBoolean(this->texturePackRequired);
 
     stream.writeUnsignedVarInt(static_cast<uint32_t>(this->addons.size()));
-    for (Addon entry : this->addons)
+    for (const Addon& entry : this->addons)
     {
-        stream.writeString(entry.packId);
-        stream.writeString(entry.packVersion);
-        stream.writeString(entry.subPackName);
+        stream.writeString<Endianness::NetworkEndian>(entry.packId);
+        stream.writeString<Endianness::NetworkEndian>(entry.packVersion);
+        stream.writeString<Endianness::NetworkEndian>(entry.subPackName);
     };
 
     stream.writeUnsignedVarInt(static_cast<uint32_t>(this->texturePacks.size()));
-    for (TexturePack entry : this->texturePacks)
+    for (const TexturePack& entry : this->texturePacks)
     {
-        stream.writeString(entry.packId);
-        stream.writeString(entry.packVersion);
-        stream.writeString(entry.subPackName);
+        stream.writeString<Endianness::NetworkEndian>(entry.packId);
+        stream.writeString<Endianness::NetworkEndian>(entry.packVersion);
+        stream.writeString<Endianness::NetworkEndian>(entry.subPackName);
     };
 
-    stream.writeString(this->baseGameVersion);
+    stream.writeString<Endianness::NetworkEndian>(this->baseGameVersion);
 
     stream.writeUnsignedInt(static_cast<uint32_t>(this->experiments.list.size()));
-    for (Experiment entry : this->experiments.list)
+    for (const Experiment& entry : this->experiments.list)
     {
-        stream.writeString(entry.toggleName);
+        stream.writeString<Endianness::NetworkEndian>(entry.toggleName);
         stream.writeBoolean(entry.enabled);
     };
     stream.writeBoolean(this->experiments.experimentsEverEnabled);

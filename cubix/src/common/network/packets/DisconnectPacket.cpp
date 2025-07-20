@@ -5,7 +5,7 @@ void DisconnectPacket::read(BinaryStream& stream)
     this->skipMessage = stream.readBoolean();
 
     if (!this->skipMessage)
-        this->message = stream.readString();
+        this->message = stream.readString<Endianness::NetworkEndian>();
 };
 
 void DisconnectPacket::write(BinaryStream& stream)
@@ -15,7 +15,7 @@ void DisconnectPacket::write(BinaryStream& stream)
 
     if (!this->skipMessage)
     {
-        stream.writeString(this->message);
-        stream.writeString("");
+        stream.writeString<Endianness::NetworkEndian>(this->message);
+        stream.writeString<Endianness::NetworkEndian>("");
     };
 };

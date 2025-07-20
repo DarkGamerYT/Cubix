@@ -18,9 +18,9 @@ void PlayerListPacket::write(BinaryStream& stream)
                 const auto& request = player->getConnection();
                 stream.writeUUID(request->getIdentity());
                 stream.writeSignedVarLong(1); // Target Actor Id
-                stream.writeString(request->getDisplayName());
-                stream.writeString(request->getXuid());
-                stream.writeString(""); // Platform Chat Id
+                stream.writeString<Endianness::NetworkEndian>(request->getDisplayName());
+                stream.writeString<Endianness::NetworkEndian>(request->getXuid());
+                stream.writeString<Endianness::NetworkEndian>(""); // Platform Chat Id
                 stream.writeInt(request->getBuildPlatform());
 
                 {

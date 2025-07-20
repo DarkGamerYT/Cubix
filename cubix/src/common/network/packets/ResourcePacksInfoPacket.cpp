@@ -7,21 +7,21 @@ void ResourcePacksInfoPacket::read(BinaryStream& stream)
     this->forceDisableVibrantVisuals = stream.readBoolean();
 
     this->worldTemplateId = stream.readUUID();
-    this->worldTemplateVersion = stream.readString();
+    this->worldTemplateVersion = stream.readString<Endianness::NetworkEndian>();
 
     unsigned short arraySize = stream.readUnsignedShort();
     for (unsigned short i = 0; i < arraySize; i++)
     {
         ResourcePack resourcePack;
         resourcePack.packId = stream.readUUID();
-        resourcePack.packVersion = stream.readString();
+        resourcePack.packVersion = stream.readString<Endianness::NetworkEndian>();
         resourcePack.packSize = stream.readUnsignedVarInt();
-        resourcePack.contentKey = stream.readString();
-        resourcePack.subPackName = stream.readString();
-        resourcePack.contentIdentity = stream.readString();
+        resourcePack.contentKey = stream.readString<Endianness::NetworkEndian>();
+        resourcePack.subPackName = stream.readString<Endianness::NetworkEndian>();
+        resourcePack.contentIdentity = stream.readString<Endianness::NetworkEndian>();
         resourcePack.hasScripts = stream.readBoolean();
         resourcePack.isRayTracingCapable = stream.readBoolean();
-        resourcePack.cdnUrl = stream.readString();
+        resourcePack.cdnUrl = stream.readString<Endianness::NetworkEndian>();
 
         this->resourcePacks.emplace_back(resourcePack);
     };
@@ -35,20 +35,20 @@ void ResourcePacksInfoPacket::write(BinaryStream& stream)
     stream.writeBoolean(this->forceDisableVibrantVisuals);
 
     stream.writeUUID(this->worldTemplateId);
-    stream.writeString(this->worldTemplateVersion);
+    stream.writeString<Endianness::NetworkEndian>(this->worldTemplateVersion);
 
     stream.writeShort((short)this->resourcePacks.size());
     for (const ResourcePack& entry : this->resourcePacks)
     {
         stream.writeUUID(entry.packId);
-        stream.writeString(entry.packVersion);
+        stream.writeString<Endianness::NetworkEndian>(entry.packVersion);
         stream.writeUnsignedVarLong(entry.packSize);
-        stream.writeString(entry.contentKey);
-        stream.writeString(entry.subPackName);
-        stream.writeString(entry.contentIdentity);
+        stream.writeString<Endianness::NetworkEndian>(entry.contentKey);
+        stream.writeString<Endianness::NetworkEndian>(entry.subPackName);
+        stream.writeString<Endianness::NetworkEndian>(entry.contentIdentity);
         stream.writeBoolean(entry.hasScripts);
         stream.writeBoolean(entry.isAddonPack);
         stream.writeBoolean(entry.isRayTracingCapable);
-        stream.writeString(entry.cdnUrl);
+        stream.writeString<Endianness::NetworkEndian>(entry.cdnUrl);
     };
 };

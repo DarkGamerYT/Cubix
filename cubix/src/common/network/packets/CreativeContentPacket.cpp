@@ -17,7 +17,7 @@ void CreativeContentPacket::write(BinaryStream& stream)
     for (const ItemGroup& group : groups)
     {
         stream.writeInt((int)group.getCategory());
-        stream.writeString(group.getName());
+        stream.writeString<Endianness::NetworkEndian>(group.getName());
 
         Item icon = group.getIcon();
         if (icon == ItemRegistry::INVALID)

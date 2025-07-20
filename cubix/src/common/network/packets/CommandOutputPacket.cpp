@@ -5,7 +5,7 @@ void CommandOutputPacket::read(BinaryStream& stream)
         // Command origin stuff
         const auto type = static_cast<CommandOriginType>(stream.readUnsignedVarInt());
         const Util::UUID& commandUUID = stream.readUUID();
-        const std::string& requestId = stream.readString();
+        const std::string& requestId = stream.readString<Endianness::NetworkEndian>();
 
         this->commandOrigin = std::make_unique<CommandOrigin>(type, nullptr, commandUUID, requestId);
         if (type == CommandOriginType::DevConsole || type == CommandOriginType::Test)
@@ -28,17 +28,17 @@ void CommandOutputPacket::write(BinaryStream& stream)
     for (const auto& [isSuccessful, message, parameters] : this->commandOutput.getMessages())
     {
         stream.writeBoolean(isSuccessful);
-        stream.writeString(message);
+        stream.writeString<Endianness::NetworkEndian>(message);
 
         stream.writeUnsignedVarInt(static_cast<uint32_t>(parameters.size()));
         for (const std::string& parameter : parameters)
         {
-            stream.writeString(parameter);
+            stream.writeString<Endianness::NetworkEndian>(parameter);
         };
     };
 
     if (this->commandOutput.getType() == CommandOutputType::DataSet)
     {
-        stream.writeString(this->commandOutput.getData());
+        stream.writeString<Endianness::NetworkEndian>(this->commandOutput.getData());
     };
 };

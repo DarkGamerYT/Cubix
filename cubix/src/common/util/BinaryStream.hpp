@@ -165,8 +165,14 @@ public:
         return static_cast<int64_t>(raw);
     };
 
+    template<Endianness E = Endianness::LittleEndian>
     std::string readString() {
-        const unsigned int length = this->readUnsignedVarInt();
+        unsigned int length;
+        if constexpr (E == Endianness::NetworkEndian)
+            length = this->readUnsignedVarInt();
+        else
+            length = this->readUnsignedInt<E>();
+
         if (this->m_ReadPos + length > m_Stream.size())
             throw std::out_of_range("Read past end while reading string");
 
@@ -370,8 +376,12 @@ public:
         this->writeSignedVarInt(pos.z);
     };
 
+    template<Endianness E = Endianness::LittleEndian>
     void writeString(const std::string& value) {
-        this->writeUnsignedVarInt(static_cast<uint32_t>(value.size()));
+        if constexpr (E == Endianness::NetworkEndian)
+            this->writeUnsignedVarInt(static_cast<uint32_t>(value.size()));
+        else
+            this->writeUnsignedInt<E>(static_cast<uint32_t>(value.size()));
         this->writeBytes(value.data(), value.size());
     };
 

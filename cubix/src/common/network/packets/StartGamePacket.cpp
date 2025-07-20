@@ -4,7 +4,7 @@ static void writeSettings(StartGamePacket& packet, BinaryStream& stream)
     stream.writeUnsignedLong(packet.settings.seed);
     
     stream.writeShort(packet.settings.spawnSettings.type);
-    stream.writeString(packet.settings.spawnSettings.userDefinedBiomeName);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.spawnSettings.userDefinedBiomeName);
     stream.writeSignedVarInt(packet.settings.spawnSettings.dimension);
 
     stream.writeSignedVarInt(static_cast<int>(packet.settings.generatorType));
@@ -19,7 +19,7 @@ static void writeSettings(StartGamePacket& packet, BinaryStream& stream)
     stream.writeSignedVarInt(packet.settings.dayCycleStopTime);
     stream.writeSignedVarInt(packet.settings.educationEditionOffer);
     stream.writeBoolean(packet.settings.educationFeatures);
-    stream.writeString(packet.settings.educationProductId);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.educationProductId);
     stream.writeUnsignedInt(static_cast<uint32_t>(packet.settings.rainLevel));
     stream.writeUnsignedInt(static_cast<uint32_t>(packet.settings.lightningLevel));
     stream.writeBoolean(packet.settings.platformLockedContent);
@@ -34,7 +34,7 @@ static void writeSettings(StartGamePacket& packet, BinaryStream& stream)
     /*stream.writeUnsignedVarInt(static_cast<uint32_t>(packet.settings.gameRules.size()));
     for (auto& entry : packet.settings.gameRules)
     {
-        stream.writeString(entry->getName());
+        stream.writeString<Endianness::NetworkEndian>(entry->getName());
         stream.writeBoolean(entry->allowUseInCommand());
         stream.writeUnsignedVarInt(static_cast<uint32_t>(entry->getType()));
         if (entry->getType() == GameRule::Type::Bool)
@@ -54,7 +54,7 @@ static void writeSettings(StartGamePacket& packet, BinaryStream& stream)
     stream.writeUnsignedInt(static_cast<uint32_t>(packet.settings.experiments.list.size()));
     for (const Experiment& entry : packet.settings.experiments.list)
     {
-        stream.writeString(entry.toggleName);
+        stream.writeString<Endianness::NetworkEndian>(entry.toggleName);
         stream.writeBoolean(entry.enabled);
     };
     stream.writeBoolean(packet.settings.experiments.experimentsEverEnabled);
@@ -73,19 +73,19 @@ static void writeSettings(StartGamePacket& packet, BinaryStream& stream)
     stream.writeBoolean(packet.settings.personaDisabled);
     stream.writeBoolean(packet.settings.customSkinsDisabled);
     stream.writeBoolean(packet.settings.emoteChatMuted);
-    stream.writeString(packet.settings.baseGameVersion);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.baseGameVersion);
     stream.writeInt(packet.settings.limitedWorldWidth);
     stream.writeInt(packet.settings.limitedWorldDepth);
     stream.writeBoolean(packet.settings.newNether);
-    stream.writeString(packet.settings.eduSharedUriResource.buttonName);
-    stream.writeString(packet.settings.eduSharedUriResource.linkUri);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.eduSharedUriResource.buttonName);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.eduSharedUriResource.linkUri);
     stream.writeBoolean(packet.settings.overrideForceExperimentalGameplay);
     stream.writeByte(packet.settings.chatRestrictionLevel);
     stream.writeBoolean(packet.settings.disablePlayerInteractions);
 
-    stream.writeString(packet.settings.serverId);
-    stream.writeString(packet.settings.worldId);
-    stream.writeString(packet.settings.scenarioId);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.serverId);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.worldId);
+    stream.writeString<Endianness::NetworkEndian>(packet.settings.scenarioId);
 };
 
 void StartGamePacket::read(BinaryStream& stream)
@@ -104,9 +104,9 @@ void StartGamePacket::write(BinaryStream& stream)
 
     writeSettings(*this, stream); // Level Settings
 
-    stream.writeString(this->levelId);
-    stream.writeString(this->levelName);
-    stream.writeString(this->templateContentIdentity);
+    stream.writeString<Endianness::NetworkEndian>(this->levelId);
+    stream.writeString<Endianness::NetworkEndian>(this->levelName);
+    stream.writeString<Endianness::NetworkEndian>(this->templateContentIdentity);
     stream.writeBoolean(this->isTrial);
 
     stream.writeSignedVarInt(this->movementSettings.authorityMode);
@@ -121,7 +121,7 @@ void StartGamePacket::write(BinaryStream& stream)
     stream.writeUnsignedVarInt(static_cast<uint32_t>(blocks.size()));
     for (const auto& block : blocks)
     {
-        stream.writeString(block.getIdentifier());
+        stream.writeString<Endianness::NetworkEndian>(block.getIdentifier());
 
         Nbt::CompoundTag root;
         root.add("molangVersion", Nbt::IntTag(static_cast<int32_t>(MolangVersion::BeforeVersioning)));
@@ -179,9 +179,9 @@ void StartGamePacket::write(BinaryStream& stream)
         Nbt::write<Endianness::NetworkEndian>(stream, root.copy(), true);
     };
 
-    stream.writeString(this->multiplayerCorrelationId);
+    stream.writeString<Endianness::NetworkEndian>(this->multiplayerCorrelationId);
     stream.writeBoolean(this->enableItemStackNetManager);
-    stream.writeString(this->serverVersion);
+    stream.writeString<Endianness::NetworkEndian>(this->serverVersion);
 
     Nbt::write<Endianness::NetworkEndian>(stream, this->playerPropertyData.copy(), true);
 

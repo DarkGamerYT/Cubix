@@ -10,7 +10,7 @@ void ItemRegistryPacket::write(BinaryStream& stream)
     stream.writeUnsignedVarInt((uint32_t)items.size());
     for (const Item& item : items)
     {
-        stream.writeString(item.getIdentifier());
+        stream.writeString<Endianness::NetworkEndian>(item.getIdentifier());
         stream.writeShort(item.getNetworkId());
         stream.writeBoolean(item.getParseVersion() == ItemVersion::DataDriven);
         stream.writeSignedVarInt((int)item.getParseVersion());

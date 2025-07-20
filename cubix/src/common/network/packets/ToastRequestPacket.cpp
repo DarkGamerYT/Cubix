@@ -1,12 +1,12 @@
 #include "ToastRequestPacket.hpp"
 void ToastRequestPacket::read(BinaryStream& stream)
 {
-    this->title = stream.readString();
-    this->content = stream.readString();
+    this->title = stream.readString<Endianness::NetworkEndian>();
+    this->content = stream.readString<Endianness::NetworkEndian>();
 };
 
 void ToastRequestPacket::write(BinaryStream& stream)
 {
-    stream.writeString(this->title);
-    stream.writeString(this->content);
+    stream.writeString<Endianness::NetworkEndian>(this->title);
+    stream.writeString<Endianness::NetworkEndian>(this->content);
 };

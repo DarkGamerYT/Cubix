@@ -1,10 +1,10 @@
 #include "ServerToClientHandshakePacket.hpp"
 void ServerToClientHandshakePacket::read(BinaryStream& stream)
 {
-    this->handshakeWebtoken = stream.readString();
+    this->handshakeWebtoken = stream.readString<Endianness::NetworkEndian>();
 };
 
 void ServerToClientHandshakePacket::write(BinaryStream& stream)
 {
-    stream.writeString(this->handshakeWebtoken);
+    stream.writeString<Endianness::NetworkEndian>(this->handshakeWebtoken);
 };

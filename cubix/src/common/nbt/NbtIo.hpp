@@ -99,29 +99,9 @@ namespace Nbt
     };
 
     template<Endianness E = Endianness::LittleEndian>
-    std::string readString(BinaryStream& stream)
-    {
-        size_t size = 0;
-        switch (E)
-        {
-            case Endianness::BigEndian:
-                size = stream.readShort<Endianness::BigEndian>(); break;
-            case Endianness::LittleEndian:
-                size = stream.readShort<Endianness::LittleEndian>(); break;
-            case Endianness::NetworkEndian:
-                size = stream.readUnsignedVarInt(); break;
-        };
-
-        std::vector<char> buffer(size);
-        stream.readBytes(buffer.data(), size);
-
-        return { buffer.begin(), buffer.end() };
-    };
-
-    template<Endianness E = Endianness::LittleEndian>
     std::unique_ptr<Nbt::Tag> read(
         BinaryStream& stream,
-        bool shouldReadId = true,
+        const bool shouldReadId = true,
         Nbt::TagType id = Nbt::TagType::Compound)
     {
         if (true == shouldReadId)
@@ -168,7 +148,7 @@ namespace Nbt
             };
             case Nbt::TagType::String:
             {
-                const std::string& value = Nbt::readString<E>(stream);
+                const std::string& value = stream.readString<E>();
                 return std::make_unique<Nbt::StringTag>(value);
             };
 
@@ -216,14 +196,14 @@ namespace Nbt
             {
                 Nbt::CompoundTag root;
                 if (true == shouldReadId)
-                    Nbt::readString<E>(stream);
+                    stream.readString<E>();
 
                 do {
                     auto type = static_cast<Nbt::TagType>(stream.readByte());
                     if (type == Nbt::TagType::End)
                         break;
 
-                    const std::string& name = Nbt::readString<E>(stream);
+                    const std::string& name = stream.readString<E>();
                     const std::unique_ptr<Nbt::Tag>& value = Nbt::read<E>(stream, false, type);
                     root.add(name, value);
                 } while (stream.m_ReadPos < stream.size());
@@ -231,6 +211,8 @@ namespace Nbt
                 return std::make_unique<Nbt::CompoundTag>(root);
             };
         };
+
+        return nullptr;
     };
 
     // Writing part
@@ -308,9 +290,9 @@ namespace Nbt
         switch (E)
         {
         case Endianness::BigEndian:
-            stream.writeShort<Endianness::BigEndian>(size); break;
+            stream.writeShort<Endianness::BigEndian>(static_cast<short>(size)); break;
         case Endianness::LittleEndian:
-            stream.writeShort<Endianness::LittleEndian>(size); break;
+            stream.writeShort<Endianness::LittleEndian>(static_cast<short>(size)); break;
         case Endianness::NetworkEndian:
             stream.writeUnsignedVarInt(size); break;
         };
@@ -322,7 +304,7 @@ namespace Nbt
     void write(
         BinaryStream& stream,
         const std::unique_ptr<Nbt::Tag>& pTag,
-        bool shouldWriteId = true,
+        const bool shouldWriteId = true,
         const std::string& name = "")
     {
         Nbt::TagType id = pTag->getId();
