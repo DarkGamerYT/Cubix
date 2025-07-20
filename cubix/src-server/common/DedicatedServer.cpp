@@ -95,10 +95,10 @@ void DedicatedServer::start()
             CommandOrigin origin{ CommandOriginType::DedicatedServer, instance, Util::UUID::randomUUID(), "" };
             instance->runCommand(input, origin, output);
 
-            CommandOutputMessage commandMessage = output.getMessages().front();
             if (output.getMessages().empty())
                 return;
 
+            CommandOutputMessage commandMessage = output.getMessages().front();
             Logger::log(
                 commandMessage.isSuccessful ? Logger::LogLevel::Info : Logger::LogLevel::Error,
                 "{}", commandMessage.message);

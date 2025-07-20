@@ -54,17 +54,6 @@ public:
         if (s_thread.joinable()) {
             s_thread.join();
         };
-
-        // Log any remaining messages in the queue before exiting
-        std::unique_lock lock(s_logMutex);
-        if (!s_logQueue.empty()) {
-            for (const auto& logEntry : s_logQueue)
-                _out(logEntry);
-
-            s_logQueue.clear();
-        };
-
-        lock.unlock();
     };
 
     template <typename... Args>
@@ -83,14 +72,18 @@ public:
 
 private:
     static void process() {
-        while (s_isRunning) {
+        while (true) {
             std::unique_lock lock(s_logMutex);
+            if (!s_isRunning && s_logQueue.empty())
+                break;
+
             if (!s_logQueue.empty()) {
                 for (const auto& logEntry : s_logQueue)
                     _out(logEntry);
 
                 s_logQueue.clear();
             };
+
             lock.unlock();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
