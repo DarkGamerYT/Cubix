@@ -94,34 +94,12 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
     return stream;
 };
 
-void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPeer::Reliability reliability) const {
+void NetworkPeer::sendStream(const BinaryStream& dataStream, const NetworkPeer::Reliability reliability) const {
     if (this->m_NetworkServer == nullptr)
         return;
 
     BinaryStream packetStream;
     packetStream.writeByte(0xFE);
-
-    BinaryStream dataStream;
-    {
-        uint16_t packetHeader = 0;
-        const auto packetId = static_cast<uint16_t>(packet.getId());
-        const uint8_t subClientSenderId = 0;
-        const auto subClientTargetId = static_cast<uint8_t>(subClientId);
-
-        // First 10 bits: Packet ID
-        packetHeader |= (packetId & 0x03FF); // 0x03FF == 0b0000001111111111
-
-        // Next 2 bits: Sender SubClient ID (bits 10-11)
-        packetHeader |= (static_cast<uint16_t>(subClientSenderId & 0x03) << 10);
-
-        // Next 2 bits: Target SubClient ID (bits 12-13)
-        packetHeader |= (static_cast<uint16_t>(subClientTargetId & 0x03) << 12);
-
-        dataStream.writeUnsignedVarInt(packetHeader);
-    };
-
-    // Write packet data
-    packet.write(dataStream);
 
     const size_t rawSize = dataStream.size();
     CompressionType compressionType = this->m_Compression;
@@ -134,16 +112,12 @@ void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPee
         packetStream.writeByte(static_cast<uint8_t>(compressionType));
     };
 
-    BinaryStream binaryStream{};
-    binaryStream.writeUnsignedVarInt(rawSize);
-    binaryStream.writeBytes(dataStream.data(), rawSize);
-
     switch (compressionType)
     {
         case CompressionType::Disabled:
         case CompressionType::None:
         {
-            packetStream.writeBytes(binaryStream.data(), binaryStream.size());
+            packetStream.writeBytes(dataStream.data(), rawSize);
             break;
         };
         case CompressionType::Zlib:
@@ -152,8 +126,8 @@ void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPee
             if (deflateInit2(&zStream, Z_BEST_SPEED, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY) != Z_OK)
                 throw std::runtime_error("Failed to initialize Zlib compressor");
 
-            zStream.next_in = const_cast<Bytef*>(binaryStream.data());
-            zStream.avail_in = binaryStream.size();
+            zStream.next_in = const_cast<Bytef*>(dataStream.data());
+            zStream.avail_in = rawSize;
 
             std::vector<uint8_t> compressedData;
             int deflateResult;
@@ -183,7 +157,7 @@ void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPee
         {
             std::string data;
             snappy::Compress(
-                reinterpret_cast<const char*>(binaryStream.data()), binaryStream.size(),
+                reinterpret_cast<const char*>(dataStream.data()), rawSize,
                 &data
             );
 
