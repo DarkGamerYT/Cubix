@@ -21,7 +21,7 @@ public:
     NetworkIdentifier::Type m_Type = NetworkIdentifier::Type::Invalid;
 
 public:
-    NetworkIdentifier() {};
+    NetworkIdentifier() = default;
 
     explicit NetworkIdentifier(const uint64_t netherNetId)
         : m_NetherNetId(netherNetId), m_Type(NetworkIdentifier::Type::NetherNet) {};

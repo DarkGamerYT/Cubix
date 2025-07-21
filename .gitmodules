@@ -8,3 +8,6 @@
 [submodule "cubix/src-deps/zlib"]
 	path = cubix/src-deps/zlib
 	url = https://github.com/madler/zlib
+[submodule "cubix/src-deps/snappy"]
+	path = cubix/src-deps/snappy
+	url = https://github.com/google/snappy

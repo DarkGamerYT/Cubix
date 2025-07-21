@@ -1,6 +1,5 @@
 #include "NetworkPeer.hpp"
 #include "NetworkServer.hpp"
-#include "RakMemoryOverride.h"
 
 BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
     CompressionType compressionType = this->m_Compression;
@@ -10,17 +9,20 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
         compressionType = static_cast<CompressionType>(byte);
     };
 
+    if (compressionType == CompressionType::None ||
+        compressionType == CompressionType::Disabled)
+        return stream;
+
+    const uint32_t unreadBytes = stream.bytesLeft();
+    const auto& compressedData = stream.readBytes(unreadBytes);
+
+    BinaryStream binaryStream{};
     switch (compressionType)
     {
         case CompressionType::Zlib:
         {
-            BinaryStream binaryStream{};
-
-            const uint32_t unreadBytes = stream.bytesLeft();
-            Bytef* compressedData = stream.m_Stream.data() + stream.m_ReadPos;
-
             z_stream zStream = {};
-            zStream.next_in = compressedData;
+            zStream.next_in = const_cast<Bytef*>(compressedData);
             zStream.avail_in = unreadBytes;
 
             if (inflateInit2(&zStream, -MAX_WBITS) != Z_OK) {
@@ -57,7 +59,32 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
         };
         case CompressionType::Snappy:
         {
+            const auto& data = reinterpret_cast<const char*>(compressedData);
+            if (!snappy::IsValidCompressedBuffer(data, unreadBytes))
+            {
+                stream = binaryStream;
+                break;
+            };
 
+            size_t uncompressedLength;
+            if (!snappy::GetUncompressedLength(data, unreadBytes, &uncompressedLength)) {
+                stream = binaryStream;
+                break;
+            };
+
+            std::vector<uint8_t> decompressedData(uncompressedLength);
+            decompressedData.resize(uncompressedLength);
+
+            if (!snappy::RawUncompress(
+                data, unreadBytes,
+                reinterpret_cast<char*>(decompressedData.data())
+            )) {
+                stream = binaryStream;
+                break;
+            };
+
+            binaryStream.writeBytes(decompressedData.data(), decompressedData.size());
+            stream = binaryStream;
             break;
         };
         default:
@@ -154,7 +181,14 @@ void NetworkPeer::sendPacket(Packet& packet, SubClientId subClientId, NetworkPee
         };
         case CompressionType::Snappy:
         {
+            std::string data;
+            snappy::Compress(
+                reinterpret_cast<const char*>(binaryStream.data()), binaryStream.size(),
+                &data
+            );
 
+            const std::vector<uint8_t> compressedData(data.begin(), data.end());
+            packetStream.writeBytes(compressedData.data(), compressedData.size());
             break;
         };
     };

@@ -86,9 +86,18 @@ set (RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-deps/rapidjson")
 include_directories("${CMAKE_SOURCE_DIR}/cubix/src-deps/rapidjson/include")
 
-#Zlib
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+#Zlib
 add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-deps/zlib")
+
+#Snappy
+set(SNAPPY_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SNAPPY_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-deps/snappy")
+include_directories(
+    "${CMAKE_SOURCE_DIR}/cubix/src-deps/snappy"
+    "${CMAKE_BINARY_DIR}/cubix/src-deps/snappy"
+)
 
 # src
 add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/common")

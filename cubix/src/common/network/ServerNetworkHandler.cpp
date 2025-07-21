@@ -319,7 +319,7 @@ void ServerNetworkHandler::handle(
     };
 
     constexpr auto compressionAlgorithm = CompressionType::Zlib;
-    constexpr uint16_t compressionThreshold = 0x01;
+    constexpr uint16_t compressionThreshold = 0x00;
 
     NetworkSettingsPacket networkSettings;
     networkSettings.compressionThreshold = compressionThreshold;

@@ -2,6 +2,7 @@
 #define NETWORKPEER_HPP
 
 #include <zlib/zlib.h>
+#include <snappy/snappy.h>
 
 #include "CompressionType.hpp"
 #include "Packet.hpp"
