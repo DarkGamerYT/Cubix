@@ -12,7 +12,7 @@
 
 namespace Nbt { class CompoundTag; };
 
-static uint32_t blockNetIdCounter = 1;
+static int32_t blockNetIdCounter = 1;
 typedef std::unordered_map<std::string, BlockState> BlockStates;
 class Item;
 class Block

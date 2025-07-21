@@ -1,7 +1,9 @@
 #ifndef SERVERNETWORKHANDLER
 #define SERVERNETWORKHANDLER
+
 #include <unordered_map>
 #include <memory>
+#include <sstream>
 
 #include "../SharedConstants.hpp"
 #include "../SubClientId.hpp"
@@ -46,6 +48,7 @@
 #include "packets/CommandRequestPacket.hpp"
 #include "packets/CommandOutputPacket.hpp"
 #include "packets/ServerboundLoadingScreenPacket.hpp"
+#include "packets/MovePlayerPacket.hpp"
 
 class ServerInstance;
 class ServerNetworkHandler
@@ -69,7 +72,8 @@ public:
     ~ServerNetworkHandler();
 
     void initializeNetwork();
-    void onTick();
+    void onTick(int nTick);
+    void onTickPlayers(int nTick);
     void shutdown();
 
     void setTransportLayer(const TransportLayer layer) { this->m_TransportLayer = layer; };
@@ -109,6 +113,7 @@ public:
     void handle(NetworkIdentifier&, RequestChunkRadiusPacket&);
     void handle(NetworkIdentifier&, PlayerSkinPacket&);
     void handle(NetworkIdentifier&, CommandRequestPacket&);
+    void handle(NetworkIdentifier&, MovePlayerPacket&);
 };
 
 #endif // !SERVERNETWORKHANDLER

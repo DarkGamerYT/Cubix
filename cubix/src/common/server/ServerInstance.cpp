@@ -51,19 +51,20 @@ void ServerInstance::onTick(const int nTick) const
 
     std::vector<std::future<void>> tasks;
 
-    //Logger::log(Logger::LogLevel::Debug, std::format("Current tick: {}", nTick));
+    // Logger::log(Logger::LogLevel::Debug, "Current tick: {}", nTick);
 
     int playerTickInterval = 1;
     if (this->m_PlayerTickPolicy == PlayerTickPolicy::THROTTLED)
         playerTickInterval = 2;
 
-    if (nTick % playerTickInterval)
+    if (nTick % playerTickInterval == 0)
     {
         // Player ticks
+        this->m_Network->onTickPlayers(nTick);
     };
 
     tasks.emplace_back(std::async(std::launch::async,
-        [&] { this->m_Network->onTick(); }));
+        [&] { this->m_Network->onTick(nTick); }));
 
     for (auto& task : tasks)
     {

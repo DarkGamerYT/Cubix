@@ -1,7 +1,9 @@
 #pragma once
 #include "../Packet.hpp"
+
 #include "./types/Experiments.hpp"
 #include "../../world/phys/Vec3.hpp"
+#include "../../world/phys/Vec2.hpp"
 #include "../../world/level/BlockPos.hpp"
 //#include "../../world/level/storage/GameRules.hpp"
 #include "../../registry/BlockRegistry.hpp"
@@ -23,8 +25,6 @@ enum class GeneratorType
     Void = 5,
     Undefined = 6
 };
-
-struct Vec2 { float x, y; };
 
 struct SpawnSettings
 {

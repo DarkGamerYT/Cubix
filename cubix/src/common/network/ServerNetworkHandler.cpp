@@ -1,4 +1,5 @@
 #include "ServerNetworkHandler.hpp"
+
 #include "../server/ServerInstance.hpp"
 
 inline AppPlatform g_AppPlatform;
@@ -54,7 +55,7 @@ void ServerNetworkHandler::shutdown() {
 };
 
 inline const std::string& serverVersion = SharedConstants::CurrentGameVersion.asString();
-void ServerNetworkHandler::onTick()
+void ServerNetworkHandler::onTick(int nTick)
 {
     if (this->m_ServerInstance->getInstanceState() != ServerInstance::InstanceState::Running)
         return;
@@ -62,28 +63,44 @@ void ServerNetworkHandler::onTick()
     this->m_NetworkServer->update();
 
     // Unconnected Pong
-    bool isEducationEdition = false;
-    bool isNintendoLimited = false;
-    std::string unconnectedPong = std::format(
-        "{};{};{};{};{};{};{};{};{};{};{};{};",
-        (isEducationEdition ? "MCEE" : "MCPE"),
+    const bool isEducationEdition = false;
+    const bool isNintendoLimited = false;
 
-        "Dedicated Server",
-        std::to_string(SharedConstants::NetworkProtocolVersion),
-        serverVersion,
-        std::to_string(this->m_Players.size()),
-        std::to_string(this->m_ConnectionDefinition.maxPlayers),
-        std::to_string(this->m_NetworkServer->m_Identifier.getHash()),
-        "Bedrock level",
-        "Survival",
-        std::to_string(!isNintendoLimited),
-        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV4),
-        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV6));
+    std::stringstream message;
+    message
+        << (isEducationEdition ? "MCEE" : "MCPE") << ";"
+
+        << "Dedicated Server" << ";"
+        << SharedConstants::NetworkProtocolVersion << ";"
+        << serverVersion << ";"
+        << this->m_Players.size() << ";"
+        << this->m_ConnectionDefinition.maxPlayers << ";"
+        << this->m_NetworkServer->m_Identifier.getHash() << ";"
+        << "Bedrock level" << ";"
+        << "Survival" << ";"
+        << !isNintendoLimited << ";"
+        << this->m_ConnectionDefinition.serverPorts.mPortV4 << ";"
+        << this->m_ConnectionDefinition.serverPorts.mPortV6 << ";";
+
+    auto unconnectedPong = message.str();
 
     unconnectedPong.insert(unconnectedPong.begin(), static_cast<signed char>(unconnectedPong.size()));
     unconnectedPong.insert(unconnectedPong.begin(), 0x00);
 
     this->m_NetworkServer->m_UnconnectedPong = unconnectedPong;
+};
+
+void ServerNetworkHandler::onTickPlayers(int nTick) {
+    std::thread([this, nTick] {
+        for (const auto& client : this->m_Players | std::views::values)
+            for (const auto& player : client | std::views::values)
+            {
+                if (player == nullptr)
+                    continue;
+
+                //player->tick();
+            };
+    }).detach();
 };
 
 void ServerNetworkHandler::onConnect(NetworkIdentifier& networkIdentifier)
@@ -133,7 +150,7 @@ void ServerNetworkHandler::disconnectClient(
     disconnectPacket.skipMessage = skipMessage;
     disconnectPacket.message = message;
 
-    networkPeer->sendPacket(disconnectPacket, subClientId);
+    networkPeer->sendPacket(subClientId, disconnectPacket);
 };
 
 void ServerNetworkHandler::sendPacket(Packet& packet) {
@@ -266,6 +283,15 @@ void ServerNetworkHandler::handle(
                 this->handle(networkIdentifier, gamePacket);
                 break;
             };
+            case MinecraftPacketIds::MovePlayer:
+            {
+                MovePlayerPacket gamePacket;
+                gamePacket.setSubClientId(subClientTargetId);
+                gamePacket.read(stream);
+
+                this->handle(networkIdentifier, gamePacket);
+                break;
+            };
 
             default:
                 break;
@@ -310,7 +336,7 @@ void ServerNetworkHandler::handle(
             disconnectReason = DisconnectReason::OutdatedServer;
         };
 
-        networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+        networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
             disconnectReason, false, disconnectMessage);
@@ -328,7 +354,7 @@ void ServerNetworkHandler::handle(
     networkSettings.clientThrottleThreshold = 0;
     networkSettings.clientThrottleScalar = 0.0f;
 
-    networkPeer->sendPacket(networkSettings, SubClientId::PrimaryClient);
+    networkPeer->sendPacket(SubClientId::PrimaryClient, networkSettings);
 
     networkPeer->m_Compression = compressionAlgorithm;
     networkPeer->m_CompressionThreshold = compressionThreshold;
@@ -365,7 +391,7 @@ void ServerNetworkHandler::handle(
             disconnectReason = DisconnectReason::OutdatedServer;
         };
 
-        networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+        networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
             disconnectReason, false, disconnectMessage);
@@ -399,7 +425,7 @@ void ServerNetworkHandler::handle(
         PlayStatusPacket playStatus;
         playStatus.status = PlayStatus::InvalidTenant;
 
-        networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+        networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
             DisconnectReason::InvalidTenant);
@@ -421,7 +447,7 @@ void ServerNetworkHandler::handle(
             disconnectMessage = "%disconnectionScreen.editionMismatchVanillaToEdu";
         };
 
-        networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+        networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
             DisconnectReason::EditionMismatch,
@@ -445,7 +471,7 @@ void ServerNetworkHandler::handle(
             disconnectReason = DisconnectReason::EditorMismatchEditorWorld;
         };
 
-        networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+        networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
             disconnectReason, false, disconnectMessage);
@@ -468,7 +494,7 @@ void ServerNetworkHandler::handle(
     PlayStatusPacket playStatus;
     playStatus.status = PlayStatus::LoginSuccess;
 
-    networkPeer->sendPacket(playStatus, SubClientId::PrimaryClient);
+    networkPeer->sendPacket(SubClientId::PrimaryClient, playStatus);
 
     Logger::log(Logger::LogLevel::Info,
         "Player connected: {}, XUID: {}, Pfid: {}",
@@ -522,7 +548,7 @@ void ServerNetworkHandler::handle(
     resourcePacksInfo.hasScripts = false;
     resourcePacksInfo.forceDisableVibrantVisuals = false;
 
-    networkPeer->sendPacket(resourcePacksInfo, SubClientId::PrimaryClient);
+    networkPeer->sendPacket(SubClientId::PrimaryClient, resourcePacksInfo);
 };
 
 void ServerNetworkHandler::handle(
@@ -561,7 +587,7 @@ void ServerNetworkHandler::handle(
         PlayStatusPacket playStatus;
         playStatus.status = PlayStatus::InvalidTenant;
 
-        networkPeer->sendPacket(playStatus, subClientId);
+        networkPeer->sendPacket(subClientId, playStatus);
         this->disconnectClient(
             networkIdentifier, subClientId,
             DisconnectReason::InvalidTenant);
@@ -585,7 +611,7 @@ void ServerNetworkHandler::handle(
     PlayStatusPacket playStatus;
     playStatus.status = PlayStatus::LoginSuccess;
 
-    networkPeer->sendPacket(playStatus, subClientId);
+    networkPeer->sendPacket(subClientId, playStatus);
 
     // Create a new player
     auto& clients = this->m_Players.at(networkIdentifier);
@@ -693,37 +719,7 @@ void ServerNetworkHandler::handle(
         case ResourcePackResponse::ResourcePackStackFinished:
         {
             player->doInitialSpawn();
-
-            { // Chunk data stuff
-                NetworkChunkPublisherUpdatePacket networkChunkPublisher;
-                networkChunkPublisher.position = { 0, 0, 0 };
-                networkChunkPublisher.radius = 38 << 4;
-                networkChunkPublisher.savedChunks = { {0, 0} };
-
-                player->sendNetworkPacket(networkChunkPublisher);
-
-                LevelChunkPacket levelChunk;
-                levelChunk.chunkPosition = { 0, 0 };
-                levelChunk.dimensionId = 0;
-                levelChunk.cacheEnabled = false;
-                levelChunk.requestSubChunks = false;
-                levelChunk.subChunkCount = 1;
-                {
-                    BinaryStream stream;
-
-                    Chunk chunk;
-                    chunk.serialize(stream, true);
-
-                    levelChunk.chunkData = stream.m_Stream;
-                };
-
-                player->sendNetworkPacket(levelChunk);
-
-                /*BlockActorDataPacket blockActorData;
-                blockActorData.position = { 0, 0, 0 };
-
-                player->sendNetworkPacket(blockActorData);*/
-            };
+            player->tick();
         };
     };
 };
@@ -882,4 +878,18 @@ void ServerNetworkHandler::handle(
         default:
             break;
     };
+};
+
+void ServerNetworkHandler::handle(
+    NetworkIdentifier& networkIdentifier,
+    MovePlayerPacket& packet
+) {
+    if (!this->m_Players.contains(networkIdentifier))
+        return;
+
+    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    if (player == nullptr)
+        return;
+
+    player->moveTo(packet.position, packet.rotation);
 };

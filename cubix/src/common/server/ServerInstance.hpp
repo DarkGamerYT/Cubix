@@ -32,7 +32,7 @@ public:
 private:
     int m_TicksPerSecond = 20;
     int m_CurrentTick = 0;
-    PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::GREEDY;
+    PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::THROTTLED;
     std::atomic<InstanceState> m_InstanceState = InstanceState::NotStarted;
     std::thread m_ServerThread;
 

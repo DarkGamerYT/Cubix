@@ -100,7 +100,7 @@ void StartGamePacket::write(BinaryStream& stream)
     stream.writeSignedVarInt(static_cast<int>(this->actorGameType));
 
     stream.writeVec3(this->position);
-    stream.writeVec2(this->rotation.x, this->rotation.y);
+    stream.writeVec2(this->rotation);
 
     writeSettings(*this, stream); // Level Settings
 

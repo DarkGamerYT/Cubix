@@ -251,7 +251,8 @@ void RakNetServer::sendPacket(const NetworkIdentifier& identifier, BinaryStream&
     bitStream.WriteAlignedBytes(stream.data(), stream.size());
 
     RakNet::RakPeerInterface* peerInterface = this->m_pPeerInterface;
-    if (peerInterface->GetConnectionState(identifier.m_Guid) != RakNet::ConnectionState::IS_CONNECTED)
+    if (peerInterface == nullptr
+        || peerInterface->GetConnectionState(identifier.m_Guid) != RakNet::ConnectionState::IS_CONNECTED)
         return;
 
     peerInterface->Send(

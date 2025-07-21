@@ -50,7 +50,7 @@ void LevelChunkPacket::write(BinaryStream& stream)
     stream.writeBoolean(this->cacheEnabled);
     if (this->cacheEnabled) {
         stream.writeUnsignedVarInt(static_cast<uint32_t>(this->blobIds.size()));
-        for (uint64_t blobId : this->blobIds)
+        for (const uint64_t blobId : this->blobIds)
             stream.writeUnsignedLong(blobId);
     };
 

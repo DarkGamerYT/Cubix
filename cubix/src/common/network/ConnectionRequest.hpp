@@ -69,6 +69,10 @@ public:
     const std::string& getXuid() const { return this->mXuid; };
     const std::string& getTitleId() const { return this->mTitleId; };
 
+    unsigned int getMaxRenderDistance() const {
+        return this->mData["MaxViewDistance"].GetInt();
+    };
+
     //bool isThirdPartyNameOnly() const;
     bool isEditorMode() const {
         return this->mData["IsEditorMode"].GetBool();

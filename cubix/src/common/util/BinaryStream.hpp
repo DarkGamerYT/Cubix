@@ -10,6 +10,8 @@
 #include "Logger.hpp"
 #include "Endianness.hpp"
 
+#include "../world/phys/Vec3.hpp"
+#include "../world/phys/Vec2.hpp"
 #include "../world/level/BlockPos.hpp"
 #include "../world/level/ChunkPos.hpp"
 #include "../world/item/Item.hpp"
@@ -201,6 +203,13 @@ public:
         return { x, y, z };
     };
 
+    Vec2 readVec2() {
+        auto x = static_cast<double>(this->read<float>());
+        auto y = static_cast<double>(this->read<float>());
+
+        return { x, y };
+    };
+
     BlockPos readNetworkBlockPosition() {
         auto x = static_cast<double>(this->readSignedVarInt());
         auto y = static_cast<double>(this->readUnsignedVarInt());
@@ -340,9 +349,9 @@ public:
         this->write<float>(static_cast<float>(vec.z));
     };
 
-    void writeVec2(const double x, const double y) {
-        this->write<float>(static_cast<float>(x));
-        this->write<float>(static_cast<float>(y));
+    void writeVec2(const Vec2& vec) {
+        this->write<float>(static_cast<float>(vec.x));
+        this->write<float>(static_cast<float>(vec.y));
     };
 
     void writeNetworkBlockPosition(const int x, const unsigned int y, const int z) {

@@ -23,6 +23,8 @@ public:
     static inline Block WARPED_PLANKS = { "minecraft:warped_planks", -243 };
     static inline Block CRIMSON_PLANKS = { "minecraft:crimson_planks", -242 };
 
+    static inline Block AIR = { "minecraft:air", -158 };
+
     static inline Block STONE = { "minecraft:stone", 1 };
     static inline Block GRASS_BLOCK = { "minecraft:grass_block", 2 };
     static inline Block DIRT = { "minecraft:dirt", 3 };
@@ -50,6 +52,9 @@ public:
         BlockRegistry::registerBlock(WARPED_PLANKS);
         BlockRegistry::registerBlock(CRIMSON_PLANKS);
 
+        BlockRegistry::registerBlock(AIR, false);
+        AIR.setBlockItem(ItemRegistry::AIR);
+
         BlockRegistry::registerBlock(STONE);
         BlockRegistry::registerBlock(GRASS_BLOCK);
         BlockRegistry::registerBlock(DIRT);
@@ -58,14 +63,17 @@ public:
         BlockRegistry::registerBlock(OAK_LOG);
     };
 
-    static void registerBlock(Block& block) {
+    static void registerBlock(Block& block, bool registerItem = true) {
         const std::string& identifier = block.getIdentifier();
         BlockRegistry::s_Blocks.emplace_back(identifier, block);
         BlockRegistry::updateNetworkIdCounter();
 
-        Item blockItem{ identifier, block.getNetworkId() };
-        ItemRegistry::registerItem(blockItem);
-        block.setBlockItem(blockItem);
+        if (registerItem)
+        {
+            Item blockItem{ identifier, block.getNetworkId() };
+            ItemRegistry::registerItem(blockItem);
+            block.setBlockItem(blockItem);
+        };
 
         BlockRegistry::hashBlockStates(block);
     };

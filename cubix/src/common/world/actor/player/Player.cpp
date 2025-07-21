@@ -1,21 +1,102 @@
 #include "Player.hpp"
+
+#include <execution>
+
 #include "../../../network/ServerNetworkHandler.hpp"
 #include "../../../network/packets/PlayerListPacket.hpp"
 
 Player::Player(
     std::shared_ptr<NetworkPeer> networkPeer, ServerNetworkHandler* networkHandler,
     std::unique_ptr<ConnectionRequest>& connection, const SubClientId subClientId
-) : m_NetworkHandler(networkHandler), m_NetworkPeer(std::move(networkPeer)), m_Connection(std::move(connection))
+) : m_networkHandler(networkHandler), m_networkPeer(std::move(networkPeer)), m_connection(std::move(connection))
 {
-    this->m_DisplayName = this->m_Connection->getThirdPartyName();
-    this->m_SubClientId = subClientId;
+    this->m_displayName = this->m_connection->getThirdPartyName();
+    this->m_subClientId = subClientId;
 };
 
 void Player::updateSkin(SerializedSkin& skin) {
-    this->m_Skin = std::move(skin);
+    this->m_skin = std::move(skin);
 };
 
-void Player::openInventory() {
+void Player::move(const Vec3& position) {
+    Actor::move(position);
+
+
+};
+
+template <typename T, std::size_t... I>
+auto safeVectorToTuple(const std::vector<T>& vec, std::index_sequence<I...>) {
+    return std::make_tuple((I < vec.size() ? vec[I] : T{})...);
+};
+
+void Player::tick() {
+    constexpr int renderDistance = 4;
+
+    NetworkChunkPublisherUpdatePacket networkChunkPublisher;
+    networkChunkPublisher.position = this->getPosition();
+    networkChunkPublisher.radius = renderDistance << 4;
+
+    this->sendNetworkPacket(networkChunkPublisher);
+
+    // Chunks
+    std::vector<std::pair<int, int>> chunkPositions;
+    for (int r = 0; r <= renderDistance; ++r) {
+        for (int dx = -r; dx <= r; ++dx) {
+            for (int dz = -r; dz <= r; ++dz) {
+                if (std::abs(dx) != r && std::abs(dz) != r)
+                    continue;
+
+                chunkPositions.emplace_back(dx, dz);
+            };
+        };
+    };
+
+    std::vector<LevelChunkPacket> chunkPackets;
+    std::for_each(
+        std::execution::par_unseq, chunkPositions.begin(), chunkPositions.end(),
+        [&](const std::pair<int, int>& pos) {
+            const auto& chunkPos = this->getChunkPos();
+            int x = chunkPos.x + pos.first;
+            int y = chunkPos.x + pos.second;
+
+            // Chunk data stuff
+            LevelChunkPacket levelChunk;
+            levelChunk.chunkPosition = { x, y };
+            levelChunk.dimensionId = 0;
+            levelChunk.cacheEnabled = false;
+            levelChunk.requestSubChunks = false;
+
+
+            constexpr int SECTION_COUNT = 16;
+            int subChunkCount = SECTION_COUNT - 1;
+
+            Chunk chunk;
+            {
+                const auto& subChunks = chunk.getSubChunks();
+                while (subChunkCount >= 0 && subChunks.at(subChunkCount).isEmpty()) {
+                    subChunkCount--;
+                };
+                subChunkCount++;
+            };
+            levelChunk.subChunkCount = subChunkCount;
+
+            {
+                BinaryStream stream;
+                chunk.serialize(stream, true);
+
+                levelChunk.chunkData = stream.m_Stream;
+            };
+
+            chunkPackets.push_back(levelChunk);
+    });
+
+    auto tuple = safeVectorToTuple(chunkPackets, std::make_index_sequence<128>{});
+    std::apply([&](auto&... args) {
+        this->sendNetworkPacket(args...);
+    }, tuple);
+};
+
+void Player::openInventory() const {
     ContainerOpenPacket containerOpen;
     containerOpen.targetActorId = 0;
     containerOpen.position = { 0, 0, 0 };
@@ -119,7 +200,7 @@ void Player::doInitialSpawn() {
     startGame.blockNetworkIdsAreHashes = true;
     startGame.networkPermissions.serverAuthSoundEnabled = true;
 
-    startGame.multiplayerCorrelationId = this->m_NetworkPeer->getNetworkServer()->m_Identifier.getCorrelationId();
+    startGame.multiplayerCorrelationId = this->m_networkPeer->getNetworkServer()->m_Identifier.getCorrelationId();
 
     startGame.levelId = "test";
     startGame.levelName = "Test";
@@ -133,9 +214,9 @@ void Player::doInitialSpawn() {
     Logger::log(Logger::LogLevel::Info,
         "Player spawned: {}, XUID: {}, Pfid: {}",
             this->getDisplayName(),
-            this->m_Connection->getXuid(), this->m_Connection->getPlayFabId());
+            this->m_connection->getXuid(), this->m_connection->getPlayFabId());
 
-    if (this->m_SubClientId == SubClientId::PrimaryClient)
+    if (this->m_subClientId == SubClientId::PrimaryClient)
     {
         // Item Registry
         ItemRegistryPacket itemRegistry;
@@ -168,12 +249,8 @@ void Player::doInitialSpawn() {
 };
 
 void Player::disconnect(DisconnectReason reason, bool skipMessage, const std::string& message) const {
-    this->m_NetworkHandler->disconnectClient(
-        this->m_NetworkPeer->getNetworkIdentifier(),
-        this->m_SubClientId,
+    this->m_networkHandler->disconnectClient(
+        this->m_networkPeer->getNetworkIdentifier(),
+        this->m_subClientId,
         reason, skipMessage, message);
-};
-
-void Player::sendNetworkPacket(Packet& packet, NetworkPeer::Reliability reliability) const {
-    this->m_NetworkPeer->sendPacket(packet, this->m_SubClientId, reliability);
 };

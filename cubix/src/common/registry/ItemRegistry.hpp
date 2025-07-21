@@ -10,6 +10,8 @@ class ItemRegistry
 public:
     static inline Item INVALID; // Invalid Item
 
+    static inline Item AIR = Item{ "minecraft:air", -158 }.setMaxStackSize(255);
+
     static inline Item ACACIA_BOAT = { "minecraft:acacia_boat", 405 };
     static inline Item GLOW_BERRIES = Item{ "minecraft:glow_berries", 796 }.setVersion(ItemVersion::Legacy);
 
@@ -19,6 +21,8 @@ private:
 public:
     static void initialize()
     {
+        ItemRegistry::registerItem(AIR);
+
         ItemRegistry::registerItem(ACACIA_BOAT);
         ItemRegistry::registerItem(GLOW_BERRIES);
     };
