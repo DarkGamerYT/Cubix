@@ -72,8 +72,8 @@ public:
     ~ServerNetworkHandler();
 
     void initializeNetwork();
-    void onTick(int nTick);
-    void onTickPlayers(int nTick);
+    void onTick(uint32_t nTick);
+    void onTickPlayers(uint32_t nTick);
     void shutdown();
 
     void setTransportLayer(const TransportLayer layer) { this->m_TransportLayer = layer; };

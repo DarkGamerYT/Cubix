@@ -69,7 +69,7 @@ public:
     const std::string& getXuid() const { return this->mXuid; };
     const std::string& getTitleId() const { return this->mTitleId; };
 
-    unsigned int getMaxRenderDistance() const {
+    uint16_t getMaxRenderDistance() const {
         return this->mData["MaxViewDistance"].GetInt();
     };
 

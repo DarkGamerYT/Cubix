@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <thread>
+#include <ranges>
 #include <string>
 
 #include "PortPair.hpp"

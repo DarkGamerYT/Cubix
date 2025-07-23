@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COMMANDFLAG_HPP
+#define COMMANDFLAG_HPP
+
 #include <cstdint>
 
 enum class CommandFlag : uint16_t {
@@ -16,3 +18,5 @@ enum class CommandFlag : uint16_t {
     Hidden                       = HiddenFromPlayerOrigin | HiddenFromCommandBlockOrigin,
     Removed                      = Hidden | HiddenFromAutomationOrigin
 };
+
+#endif // !COMMANDFLAG_HPP

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef VEC3_HPP
+#define VEC3_HPP
+
 #include <sstream>
 #include <algorithm>
 #include <cstdint>
@@ -73,3 +75,5 @@ public:
     bool operator==(const Vec3& other) const { return x == other.x && y == other.y && z == other.z; };
     bool operator!=(const Vec3& other) const { return !(*this == other); };
 };
+
+#endif // !VEC3_HPP

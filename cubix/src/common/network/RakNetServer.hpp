@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RAKNETSERVER_HPP
+#define RAKNETSERVER_HPP
+
 #include <memory>
 
 #include "../../../src-deps/RakNet/Source/DS_Map.h"
@@ -30,3 +32,5 @@ public:
     void sendPacket(BinaryStream&, NetworkPeer::Reliability) override;
     void sendPacket(const NetworkIdentifier&, BinaryStream&, NetworkPeer::Reliability) override;
 };
+
+#endif // !RAKNETSERVER_HPP

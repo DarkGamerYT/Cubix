@@ -1,4 +1,6 @@
-#pragma once
+#ifndef VEC2_HPP
+#define VEC2_HPP
+
 #include <sstream>
 #include <algorithm>
 #include <cstdint>
@@ -32,3 +34,5 @@ public:
     bool operator==(const Vec2& other) const { return x == other.x && y == other.y; };
     bool operator!=(const Vec2& other) const { return !(*this == other); };
 };
+
+#endif // !VEC2_HPP

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef STORAGEVERSION_HPP
+#define STORAGEVERSION_HPP
+
 enum class StorageVersion : int {
     Unknown = 0,
     OldV1 = 1,
@@ -12,3 +14,5 @@ enum class StorageVersion : int {
     LevelDataUpgradedSeed = 9,
     LevelDataStrictSize = 10,
 };
+
+#endif // !STORAGEVERSION_HPP

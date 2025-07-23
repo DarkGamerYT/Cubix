@@ -21,20 +21,20 @@
 class BinaryStream
 {
 public:
-    std::vector<uint8_t> m_Stream;
-    size_t m_ReadPos = 0;
+    std::vector<uint8_t> mStream;
+    size_t mReadPos = 0;
 
 public:
     BinaryStream() = default;
     explicit BinaryStream(const std::vector<uint8_t>& data)
-        : m_Stream(data) {};
+        : mStream(data) {};
 
-    const uint8_t* data() const { return this->m_Stream.data(); };
-    size_t size() const { return this->m_Stream.size(); };
+    const uint8_t* data() const { return this->mStream.data(); };
+    size_t size() const { return this->mStream.size(); };
     size_t bytesLeft() const {
-        return this->m_Stream.size() - this->m_ReadPos;
+        return this->mStream.size() - this->mReadPos;
     };
-    void reset() { this->m_ReadPos = 0; };
+    void reset() { this->mReadPos = 0; };
 
 
     // Readers
@@ -43,12 +43,12 @@ public:
             throw std::out_of_range(
                 std::format(
                     "Read past end. Pos: {}, size: {}",
-                    this->m_ReadPos + length, this->m_Stream.size()
+                    this->mReadPos + length, this->mStream.size()
                 )
             );
 
-        uint8_t* ptr = this->m_Stream.data() + this->m_ReadPos;
-        this->m_ReadPos += length;
+        uint8_t* ptr = this->mStream.data() + this->mReadPos;
+        this->mReadPos += length;
         return ptr;
     };
 
@@ -169,20 +169,20 @@ public:
 
     template<Endianness E = Endianness::LittleEndian>
     std::string readString() {
-        unsigned int length;
+        size_t length;
         if constexpr (E == Endianness::NetworkEndian)
             length = this->readUnsignedVarInt();
         else
             length = this->readUnsignedInt<E>();
 
-        if (this->m_ReadPos + length > m_Stream.size())
+        if (this->mReadPos + length > mStream.size())
             throw std::out_of_range("Read past end while reading string");
 
         using difference = std::vector<unsigned char>::difference_type;
-        const auto start = m_Stream.begin() + static_cast<difference>(m_ReadPos);
+        const auto start = mStream.begin() + static_cast<difference>(mReadPos);
         const auto end = std::next(start, length);
 
-        this->m_ReadPos += length;
+        this->mReadPos += length;
         return { start, end };
     };
 
@@ -234,7 +234,7 @@ public:
     // Writers
     void writeBytes(const void* data, const size_t length) {
         const auto* bytes = static_cast<const uint8_t*>(data);
-        this->m_Stream.insert(this->m_Stream.end(), bytes, bytes + length);
+        this->mStream.insert(this->mStream.end(), bytes, bytes + length);
     };
 
     template<typename T>
@@ -354,7 +354,7 @@ public:
         this->write<float>(static_cast<float>(vec.y));
     };
 
-    void writeNetworkBlockPosition(const int x, const unsigned int y, const int z) {
+    void writeNetworkBlockPosition(const int32_t x, const uint32_t y, const int32_t z) {
         this->writeSignedVarInt(x);
         this->writeUnsignedVarInt(y);
         this->writeSignedVarInt(z);
@@ -403,13 +403,13 @@ public:
 
     std::string toString() const
     {
-        const size_t streamSize = this->m_Stream.size();
+        const size_t streamSize = this->mStream.size();
         std::stringstream messageData;
         for (size_t i = 0; i < streamSize; i++)
         {
             messageData
                 << "0x" << std::setw(2) << std::setfill('0')
-                << std::hex << (0xFF & static_cast<unsigned int>(this->m_Stream[i]));
+                << std::hex << (0xFF & this->mStream[i]);
 
             if (i != streamSize - 1)
                 messageData << ", ";

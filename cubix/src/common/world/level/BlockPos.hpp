@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BLOCKPOS_HPP
+#define BLOCKPOS_HPP
+
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -29,3 +31,5 @@ public:
     const int64_t randomSeed() const;
     const std::string toString() const;
 };
+
+#endif // !BLOCKPOS_HPP

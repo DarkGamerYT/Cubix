@@ -55,7 +55,7 @@ void ServerNetworkHandler::shutdown() {
 };
 
 inline const std::string& serverVersion = SharedConstants::CurrentGameVersion.asString();
-void ServerNetworkHandler::onTick(int nTick)
+void ServerNetworkHandler::onTick(uint32_t nTick)
 {
     if (this->m_ServerInstance->getInstanceState() != ServerInstance::InstanceState::Running)
         return;
@@ -66,23 +66,21 @@ void ServerNetworkHandler::onTick(int nTick)
     const bool isEducationEdition = false;
     const bool isNintendoLimited = false;
 
-    std::stringstream message;
-    message
-        << (isEducationEdition ? "MCEE" : "MCPE") << ";"
+    std::string unconnectedPong = std::format(
+        "{};{};{};{};{};{};{};{};{};{};{};{};",
+        (isEducationEdition ? "MCEE" : "MCPE"),
 
-        << "Dedicated Server" << ";"
-        << SharedConstants::NetworkProtocolVersion << ";"
-        << serverVersion << ";"
-        << this->m_Players.size() << ";"
-        << this->m_ConnectionDefinition.maxPlayers << ";"
-        << this->m_NetworkServer->m_Identifier.getHash() << ";"
-        << "Bedrock level" << ";"
-        << "Survival" << ";"
-        << !isNintendoLimited << ";"
-        << this->m_ConnectionDefinition.serverPorts.mPortV4 << ";"
-        << this->m_ConnectionDefinition.serverPorts.mPortV6 << ";";
-
-    auto unconnectedPong = message.str();
+        "Dedicated Server",
+        std::to_string(SharedConstants::NetworkProtocolVersion),
+        serverVersion,
+        std::to_string(this->m_Players.size()),
+        std::to_string(this->m_ConnectionDefinition.maxPlayers),
+        std::to_string(this->m_NetworkServer->m_Identifier.getHash()),
+        "Bedrock level",
+        "Survival",
+        std::to_string(!isNintendoLimited),
+        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV4),
+        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV6));
 
     unconnectedPong.insert(unconnectedPong.begin(), static_cast<signed char>(unconnectedPong.size()));
     unconnectedPong.insert(unconnectedPong.begin(), 0x00);
@@ -90,7 +88,7 @@ void ServerNetworkHandler::onTick(int nTick)
     this->m_NetworkServer->m_UnconnectedPong = unconnectedPong;
 };
 
-void ServerNetworkHandler::onTickPlayers(int nTick) {
+void ServerNetworkHandler::onTickPlayers(uint32_t nTick) {
     std::thread([this, nTick] {
         for (const auto& client : this->m_Players | std::views::values)
             for (const auto& player : client | std::views::values)

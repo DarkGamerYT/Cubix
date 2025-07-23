@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMPRESSIONTYPE_HPP
+#define COMPRESSIONTYPE_HPP
 
 enum class CompressionType : int
 {
@@ -7,3 +8,5 @@ enum class CompressionType : int
     Snappy   = 0x01,
     None     = 0xFF
 };
+
+#endif // !COMPRESSIONTYPE_HPP

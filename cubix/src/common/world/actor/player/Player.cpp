@@ -24,13 +24,15 @@ void Player::move(const Vec3& position) {
 
 };
 
-template <typename T, std::size_t... I>
-auto safeVectorToTuple(const std::vector<T>& vec, std::index_sequence<I...>) {
-    return std::make_tuple((I < vec.size() ? vec[I] : T{})...);
+template <typename T, std::size_t N>
+auto vectorToTuple(const std::vector<T>& vec) {
+    return [&]<std::size_t... I>(std::index_sequence<I...>) {
+        return std::make_tuple((I < vec.size() ? vec[I] : T{})...);
+    }(std::make_index_sequence<N>());
 };
 
 void Player::tick() {
-    constexpr int renderDistance = 4;
+    const int renderDistance = 5;
 
     NetworkChunkPublisherUpdatePacket networkChunkPublisher;
     networkChunkPublisher.position = this->getPosition();
@@ -51,10 +53,12 @@ void Player::tick() {
         };
     };
 
-    std::vector<LevelChunkPacket> chunkPackets;
+    std::vector<LevelChunkPacket> chunkPackets(chunkPositions.size());
     std::for_each(
         std::execution::par_unseq, chunkPositions.begin(), chunkPositions.end(),
         [&](const std::pair<int, int>& pos) {
+            size_t index = &pos - chunkPositions.data();
+
             const auto& chunkPos = this->getChunkPos();
             int x = chunkPos.x + pos.first;
             int y = chunkPos.x + pos.second;
@@ -84,16 +88,26 @@ void Player::tick() {
                 BinaryStream stream;
                 chunk.serialize(stream, true);
 
-                levelChunk.chunkData = stream.m_Stream;
+                levelChunk.chunkData = stream.mStream;
             };
 
-            chunkPackets.push_back(levelChunk);
+            chunkPackets[index] = levelChunk;
     });
 
-    auto tuple = safeVectorToTuple(chunkPackets, std::make_index_sequence<128>{});
-    std::apply([&](auto&... args) {
-        this->sendNetworkPacket(args...);
-    }, tuple);
+    constexpr size_t batchSize = 10;
+    for (size_t i = 0; i < chunkPackets.size(); i += batchSize)
+    {
+        using difference = std::vector<unsigned char>::difference_type;
+        const auto start = chunkPackets.begin() + static_cast<difference>(i);
+        const auto end = std::next(start, min(batchSize, chunkPackets.size() - i));
+
+        std::vector batch(start, end);
+
+        auto tuple = vectorToTuple<LevelChunkPacket, batchSize>(batch);
+        std::apply([&](auto&... args) {
+            this->sendNetworkPacket(args...);
+        }, tuple);
+    };
 };
 
 void Player::openInventory() const {

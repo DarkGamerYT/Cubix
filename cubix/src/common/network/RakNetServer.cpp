@@ -43,7 +43,7 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
                     const std::string& message = pServerLocator->m_UnconnectedPong;
                     if (!message.empty())
                     {
-                        pServerLocator->m_pPeerInterface->SetOfflinePingResponse(message.c_str(), static_cast<unsigned int>(message.size()));
+                        pServerLocator->m_pPeerInterface->SetOfflinePingResponse(message.c_str(), message.size());
                     };
 
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -147,12 +147,8 @@ void RakNetServer::update()
                             continue;
                         };
 
-                        using difference = std::vector<unsigned char>::difference_type;
-                        const auto start = stream.m_Stream.begin() + static_cast<difference>(stream.m_ReadPos);
-                        const auto end = std::next(start, payloadSize);
-
-                        std::vector<uint8_t> payload{ start, end };
-                        stream.m_ReadPos += payloadSize;
+                        const uint8_t* buffer = stream.readBytes(payloadSize);
+                        std::vector payload(buffer, buffer + payloadSize);
 
                         BinaryStream packetStream(payload);
                         this->m_Network->handle(networkIdentifier, packetStream);
@@ -217,7 +213,7 @@ void RakNetServer::update()
                 if (message.empty())
                     continue;
 
-                response.Write(message.c_str(), static_cast<unsigned int>(message.size()));
+                response.Write(message.c_str(), message.size());
 
                 // Send back
                 this->m_pPeerInterface->Send(

@@ -47,7 +47,7 @@ int32_t Block::hash(const Block& block)
     BinaryStream stream;
     Nbt::write(stream, root->copy());
 
-    const std::vector<uint8_t>& data = stream.m_Stream;
+    const std::vector<uint8_t>& data = stream.mStream;
     int32_t hash = 0x811C9DC5;
     for (const uint8_t byte : data)
     {

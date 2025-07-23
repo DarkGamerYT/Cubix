@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CHUNKPOS_HPP
+#define CHUNKPOS_HPP
+
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -15,3 +17,5 @@ public:
 
     const std::string toString() const;
 };
+
+#endif // !CHUNKPOS_HPP

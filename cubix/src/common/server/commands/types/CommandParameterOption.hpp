@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COMMANDPARAMETEROPTION_HPP
+#define COMMANDPARAMETEROPTION_HPP
+
 #include <cstdint>
 
 enum class CommandParameterOption : uint8_t {
@@ -7,3 +9,5 @@ enum class CommandParameterOption : uint8_t {
     HasSemanticConstraint     = 1 << 1,
     EnumAsChainedCommand      = 1 << 2
 };
+
+#endif // !COMMANDPARAMETEROPTION_HPP

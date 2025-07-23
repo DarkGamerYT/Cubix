@@ -206,7 +206,7 @@ namespace Nbt
                     const std::string& name = stream.readString<E>();
                     const std::unique_ptr<Nbt::Tag>& value = Nbt::read<E>(stream, false, type);
                     root.add(name, value);
-                } while (stream.m_ReadPos < stream.size());
+                } while (stream.mReadPos < stream.size());
 
                 return std::make_unique<Nbt::CompoundTag>(root);
             };

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef AABB_HPP
+#define AABB_HPP
+
 #include <sstream>
 
 #include "Vec3.hpp"
@@ -116,3 +118,5 @@ public:
     bool operator==(const AABB& other) const { return this->min == other.min && this->max == other.max; };
     bool operator!=(const AABB& other) const { return !(*this == other); };
 };
+
+#endif // !AABB_HPP

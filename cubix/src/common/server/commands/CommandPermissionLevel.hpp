@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COMMANDPERMISSIONLEVEL_HPP
+#define COMMANDPERMISSIONLEVEL_HPP
+
 #include <cstdint>
 
 enum class CommandPermissionLevel : uint8_t {
@@ -9,3 +11,5 @@ enum class CommandPermissionLevel : uint8_t {
     Owner         = 4,
     Internal      = 5
 };
+
+#endif // !COMMANDPERMISSIONLEVEL_HPP

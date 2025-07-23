@@ -44,7 +44,7 @@ void ServerInstance::initializeCommands()
     CommandRegistry::registerCommand<GiveCommand>("give", CommandPermissionLevel::Any);
 };
 
-void ServerInstance::onTick(const int nTick) const
+void ServerInstance::onTick(const uint32_t nTick) const
 {
     if (this->m_InstanceState != InstanceState::Running)
         return;

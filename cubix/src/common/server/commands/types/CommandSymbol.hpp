@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COMMANDSYMBOL_HPP
+#define COMMANDSYMBOL_HPP
+
 enum class CommandSymbolBit : int {
     NonTerminalBit   = 0x100000,
     EnumBit          = 0x200000,
@@ -107,3 +109,5 @@ enum class CommandSymbol : int {
     CodeBuilderSelectParam    = 0x5a | CommandSymbolBit::NonTerminalBit,
     CodeBuilderSelector       = 0x5b | CommandSymbolBit::NonTerminalBit
 };
+
+#endif // !COMMANDSYMBOL_HPP

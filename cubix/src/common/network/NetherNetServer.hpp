@@ -1,4 +1,6 @@
-#pragma once
+#ifndef NETHERNETSERVER_HPP
+#define NETHERNETSERVER_HPP
+
 #include <memory>
 
 #include "NetworkServer.hpp"
@@ -19,3 +21,5 @@ public:
     void sendPacket(BinaryStream&, NetworkPeer::Reliability) override;
     void sendPacket(const NetworkIdentifier&, BinaryStream&, NetworkPeer::Reliability) override;
 };
+
+#endif // !NETHERNETSERVER_HPP

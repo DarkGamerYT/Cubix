@@ -21,7 +21,7 @@
 class ServerInstance
 {
 public:
-    enum class InstanceState : int {
+    enum class InstanceState {
         Running    = 0,
         Stopped    = 1,
         NotStarted = 2
@@ -31,7 +31,7 @@ public:
 
 private:
     int m_TicksPerSecond = 20;
-    int m_CurrentTick = 0;
+    uint32_t m_CurrentTick = 0;
     PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::THROTTLED;
     std::atomic<InstanceState> m_InstanceState = InstanceState::NotStarted;
     std::thread m_ServerThread;
@@ -55,7 +55,7 @@ public:
         };
     };
 
-    void onTick(int) const;
+    void onTick(uint32_t) const;
     void runCommand(const std::string& command, const CommandOrigin&, CommandOutput&);
 };
 
