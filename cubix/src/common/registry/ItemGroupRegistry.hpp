@@ -7,6 +7,21 @@
 class ItemGroupRegistry
 {
 public:
+    static void initialize();
+
+    static void registerGroup(ItemGroup& group) {
+        ItemGroupRegistry::sGroups.emplace_back(group);
+        ItemGroupRegistry::updateIndexCounter();
+    };
+
+    static const std::vector<ItemGroup>& getAll() { return sGroups; };
+
+private:
+    static inline std::vector<ItemGroup> sGroups{};
+
+    static void updateIndexCounter();
+
+public:
     // Construction
     static ItemGroup PLANKS;
     static ItemGroup WALLS;
@@ -126,22 +141,6 @@ public:
     static ItemGroup FIREWORK;
     static ItemGroup FIREWORK_STARS;
     static inline ItemGroup ITEMS_EMPTY_13 { ItemCategory::Items };
-
-private:
-    static inline std::vector<ItemGroup> s_Groups{};
-
-public:
-    static void initialize();
-
-    static void registerGroup(ItemGroup& group) {
-        ItemGroupRegistry::s_Groups.emplace_back(group);
-        ItemGroupRegistry::updateIndexCounter();
-    };
-
-    static const std::vector<ItemGroup>& getAll() { return s_Groups; };
-
-private:
-    static void updateIndexCounter();
 };
 
 #endif // !ITEMGROUPREGISTRY_HPP

@@ -4,7 +4,7 @@
 #include "../Packet.hpp"
 #include "../../world/actor/player/Player.hpp"
 
-class PlayerListPacket : public Packet
+class PlayerListPacket final : public Packet
 {
 public:
     enum class Action {

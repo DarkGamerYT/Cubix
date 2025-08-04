@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../world/Difficulty.hpp"
 
-class SetDifficultyPacket : public Packet
+class SetDifficultyPacket final : public Packet
 {
 public:
     Difficulty difficulty;

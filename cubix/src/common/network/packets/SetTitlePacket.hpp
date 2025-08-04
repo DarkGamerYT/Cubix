@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class SetTitlePacket : public Packet
+class SetTitlePacket final : public Packet
 {
 public:
     enum class TitleType

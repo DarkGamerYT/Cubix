@@ -9,7 +9,7 @@ enum class PlayerRespawnState
     ClientReadyToSpawn = 2
 };
 
-class RespawnPacket : public Packet
+class RespawnPacket final : public Packet
 {
 public:
     Vec3 position;

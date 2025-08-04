@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../server/commands/CommandOrigin.hpp"
 
-class CommandRequestPacket : public Packet
+class CommandRequestPacket final : public Packet
 {
 public:
     std::string command;

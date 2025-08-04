@@ -66,9 +66,10 @@ private:
 
     std::unique_ptr<NetworkServer> m_NetworkServer;
     ServerInstance* m_ServerInstance;
+    std::shared_ptr<Level> m_Level;
 
 public:
-    ServerNetworkHandler(ServerInstance*, const ConnectionDefinition&);
+    ServerNetworkHandler(const std::shared_ptr<Level>&, ServerInstance*, const ConnectionDefinition&);
     ~ServerNetworkHandler();
 
     void initializeNetwork();

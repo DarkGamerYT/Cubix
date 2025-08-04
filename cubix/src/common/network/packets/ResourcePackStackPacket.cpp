@@ -26,11 +26,12 @@ void ResourcePackStackPacket::write(BinaryStream& stream)
 
     stream.writeString<Endianness::NetworkEndian>(this->baseGameVersion);
 
-    stream.writeUnsignedInt(static_cast<uint32_t>(this->experiments.list.size()));
-    for (const Experiment& entry : this->experiments.list)
+    const auto& experiments = this->experiments.experimentList;
+    stream.writeUnsignedInt(static_cast<uint32_t>(experiments.size()));
+    for (const auto& [name, isEnabled] : experiments)
     {
-        stream.writeString<Endianness::NetworkEndian>(entry.toggleName);
-        stream.writeBoolean(entry.enabled);
+        stream.writeString<Endianness::NetworkEndian>(name);
+        stream.writeBoolean(isEnabled);
     };
     stream.writeBoolean(this->experiments.experimentsEverEnabled);
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ClientCacheStatusPacket : public Packet
+class ClientCacheStatusPacket final : public Packet
 {
 public:
     bool isCacheSupported;

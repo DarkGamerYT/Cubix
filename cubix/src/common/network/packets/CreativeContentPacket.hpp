@@ -4,7 +4,7 @@
 #include "../../registry/ItemGroupRegistry.hpp"
 #include "../../registry/ItemRegistry.hpp"
 
-class CreativeContentPacket : public Packet
+class CreativeContentPacket final : public Packet
 {
 public:
     CreativeContentPacket()

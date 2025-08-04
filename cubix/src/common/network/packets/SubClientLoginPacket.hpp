@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../ConnectionRequest.hpp"
 
-class SubClientLoginPacket : public Packet
+class SubClientLoginPacket final : public Packet
 {
 public:
     std::vector<std::string> chains;

@@ -34,7 +34,7 @@ public:
             this->major() << 24
             | this->minor() << 16
             | this->patch() << 8
-            | this->revision() | 1
+            | this->revision()
         );
     };
 
@@ -43,7 +43,7 @@ public:
         uint16_t major = (version >> 24) & 0xFF;
         uint16_t minor = (version >> 16) & 0xFF;
         uint16_t patch = (version >> 8) & 0xFF;
-        uint16_t revision = (version - 1) & 0xFF;
+        uint16_t revision = (version) & 0xFF;
         return { major, minor, patch, revision };
     };
 

@@ -44,7 +44,7 @@ enum class ContainerType
     CRAFTER = 36
 };
 
-class ContainerOpenPacket : public Packet
+class ContainerOpenPacket final : public Packet
 {
 public:
     uint8_t containerId;

@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../world/actor/player/SerializedSkin.hpp"
 
-class PlayerSkinPacket : public Packet
+class PlayerSkinPacket final : public Packet
 {
 public:
     Util::UUID uuid;

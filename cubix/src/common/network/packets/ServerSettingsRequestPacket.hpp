@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ServerSettingsRequestPacket : public Packet
+class ServerSettingsRequestPacket final : public Packet
 {
 public:
     ServerSettingsRequestPacket()

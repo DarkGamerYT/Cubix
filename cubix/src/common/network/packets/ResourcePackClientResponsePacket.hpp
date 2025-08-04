@@ -9,7 +9,7 @@ enum class ResourcePackResponse
     ResourcePackStackFinished = 4
 };
 
-class ResourcePackClientResponsePacket : public Packet
+class ResourcePackClientResponsePacket final : public Packet
 {
 public:
     ResourcePackResponse responseStatus;

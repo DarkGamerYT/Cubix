@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ShowCreditsPacket : public Packet
+class ShowCreditsPacket final : public Packet
 {
 public:
     enum class CreditsState

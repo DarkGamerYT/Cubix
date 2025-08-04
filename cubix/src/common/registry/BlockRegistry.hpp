@@ -10,6 +10,22 @@
 
 class BlockRegistry
 {
+private:
+    static inline std::vector<std::pair<std::string, Block>> sBlocks{};
+    static inline std::unordered_map<int32_t, BlockDescriptor> sPermutations{};
+
+public:
+    static void initialize();
+
+    static void registerBlock(Block& block, bool registerItem = true);
+
+    static std::vector<BlockDescriptor> getAll();
+    static const BlockDescriptor& getPermutation(const int32_t hash);
+
+private:
+    static void updateNetworkIdCounter();
+    static void hashBlockStates(Block& block);
+
 public:
     static Block PALE_OAK_PLANKS;
     static Block DARK_OAK_PLANKS;
@@ -32,22 +48,6 @@ public:
     static Block COBBLESTONE;
     static Block OAK_PLANKS;
     static Block OAK_LOG;
-
-private:
-    static inline std::vector<std::pair<std::string, Block>> sBlocks{};
-    static inline std::unordered_map<int32_t, BlockDescriptor> sPermutations{};
-
-public:
-    static void initialize();
-
-    static void registerBlock(Block& block, bool registerItem = true);
-
-    static std::vector<BlockDescriptor> getAll();
-    static const BlockDescriptor& getPermutation(const int32_t hash);
-
-private:
-    static void updateNetworkIdCounter();
-    static void hashBlockStates(Block& block);
 };
 
 #endif // !BLOCKREGISTRY_HPP

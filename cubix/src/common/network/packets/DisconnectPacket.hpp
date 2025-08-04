@@ -121,7 +121,7 @@ enum class DisconnectReason
     NetherNetClientSignalingError
 };
 
-class DisconnectPacket : public Packet
+class DisconnectPacket final : public Packet
 {
 public:
     DisconnectReason reason;

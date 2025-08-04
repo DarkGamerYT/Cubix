@@ -35,12 +35,13 @@ private:
     PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::THROTTLED;
     std::atomic<InstanceState> m_InstanceState = InstanceState::NotStarted;
     std::thread m_ServerThread;
+    std::shared_ptr<Level> m_Level;
 
 public:
     ServerInstance();
     ~ServerInstance();
 
-    void initializeServer(PlayerTickPolicy, const ConnectionDefinition&);
+    void initializeServer(const LevelSettings&, PlayerTickPolicy, const ConnectionDefinition&);
     void initializeCommands();
     void startServerThread();
     void shutdown();

@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../world/GameMode.hpp"
 
-class SetPlayerGameTypePacket : public Packet
+class SetPlayerGameTypePacket final : public Packet
 {
 public:
     GameType gameType;

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class RequestChunkRadiusPacket : public Packet
+class RequestChunkRadiusPacket final : public Packet
 {
 public:
     int chunkRadius;

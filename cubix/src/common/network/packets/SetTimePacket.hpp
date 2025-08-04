@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class SetTimePacket : public Packet
+class SetTimePacket final : public Packet
 {
 public:
     int32_t time;

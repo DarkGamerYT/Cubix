@@ -1,7 +1,7 @@
 #include "Vec3.hpp"
 Vec3 Vec3::normalized() const
 {
-    double magnitude = this->length();
+    const double magnitude = this->length();
     return *this / magnitude;
 };
 
@@ -24,12 +24,12 @@ Vec3 Vec3::clamp(const Vec3& vec, const Vec3& min, const Vec3& max)
 
 Vec3 Vec3::slerp(const Vec3& a, const Vec3& b, double s)
 {
-    double dot = Vec3::dot(a, b);
-    double theta = std::acos(dot);
-    double sinTheta = std::sin(theta);
+    const double dot = Vec3::dot(a, b);
+    const double theta = std::acos(dot);
+    const double sinTheta = std::sin(theta);
 
-    double factorA = std::sin((1.0 - s) * theta) / sinTheta;
-    double factorB = std::sin(s * theta) / sinTheta;
+    const double factorA = std::sin((1.0 - s) * theta) / sinTheta;
+    const double factorB = std::sin(s * theta) / sinTheta;
     return (a * factorA) + (b * factorB);
 };
 

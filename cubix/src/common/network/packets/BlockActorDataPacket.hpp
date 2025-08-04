@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../nbt/NbtIo.hpp"
 
-class BlockActorDataPacket : public Packet
+class BlockActorDataPacket final : public Packet
 {
 public:
     BlockPos position;

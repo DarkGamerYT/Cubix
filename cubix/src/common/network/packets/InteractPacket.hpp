@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../world/phys/Vec3.hpp"
 
-class InteractPacket : public Packet
+class InteractPacket final : public Packet
 {
 public:
     enum class Action

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class SetLocalPlayerAsInitializedPacket : public Packet
+class SetLocalPlayerAsInitializedPacket final : public Packet
 {
 public:
     int64_t playerRuntimeId;

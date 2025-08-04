@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ClientToServerHandshakePacket : public Packet
+class ClientToServerHandshakePacket final : public Packet
 {
 public:
     ClientToServerHandshakePacket()

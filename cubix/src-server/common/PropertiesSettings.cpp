@@ -5,11 +5,6 @@ static std::string trim(std::string& value)
     value.erase(0, std::min(value.find_first_not_of(" \t"), value.size()));
     value.erase(0, value.size() - value.find_last_not_of(" \t") - 1);
 
-    std::ranges::transform(
-        value, value.begin(),
-        [](const unsigned char c) { return std::tolower(c); }
-    );
-
     return value;
 };
 
@@ -60,6 +55,7 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
             continue;
         // Trim the key
         trim(key);
+        Util::toLower(key);
 
         if (const size_t commentPos = value.find('#');
             commentPos != std::string::npos)
@@ -70,10 +66,18 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
 
         static const std::unordered_map<std::string, std::function<void(std::string)>> actions = {
             { "gamemode",
-                [this](const std::string& v) { this->m_GameMode = v; } },
+                [this](const std::string& v) {
+                    Util::toLower(this->m_GameMode);
+                    this->m_GameMode = v;
+                }
+            },
 
             { "difficulty",
-                [this](const std::string& v) { this->m_Difficulty = v; } },
+                [this](const std::string& v) {
+                    Util::toLower(this->m_Difficulty);
+                    this->m_Difficulty = v;
+                }
+            },
 
             { "server-name",
                 [this](const std::string& v) { this->m_ServerName = v; } },
@@ -106,7 +110,11 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
                 [this](const std::string& v) { this->m_TickDistance = PropertiesSettings::parseInt(v); } },
 
             { "player-tick-policy",
-                [this](const std::string& v) { this->m_PlayerTickPolicy = v; } },
+                [this](const std::string& v) {
+                    Util::toLower(this->m_PlayerTickPolicy);
+                    this->m_PlayerTickPolicy = v;
+                }
+            },
 
             { "allow-list",
                 [this](const std::string& v) { this->m_AllowList = PropertiesSettings::parseBoolean(v); } },
@@ -122,6 +130,7 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
 
             { "chat-restriction",
                 [this](const std::string& v) {
+                    Util::toLower(v);
                     if (v == "dropped")
                         this->m_ChatRestrictionLevel = 1;
                     else if (v == "disabled")
@@ -132,6 +141,7 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
 
             { "compression-algorithm",
                 [this](const std::string& v) {
+                    Util::toLower(v);
                     if (v == "zlib")
                         this->m_CompressionAlgorithm = 0x01;
                     else if (v == "snappy")
@@ -141,7 +151,11 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
             },
 
             { "default-player-permission-level",
-                [this](const std::string& v) { this->m_DefaultPermissionLevel = v; } },
+                [this](const std::string& v) {
+                    Util::toLower(this->m_DefaultPermissionLevel);
+                    this->m_DefaultPermissionLevel = v;
+                }
+            },
         };
 
         const auto it = actions.find(key);
@@ -177,7 +191,7 @@ int PropertiesSettings::getOpPermissionLevel() const
 GameType PropertiesSettings::getGameMode() const
 {
     if (this->m_GameMode == "creative" || this->m_GameMode == "1" || this->m_GameMode == "c")
-        return GameType::Survival;
+        return GameType::Creative;
 
     else if (this->m_GameMode == "adventure" || this->m_GameMode == "2" || this->m_GameMode == "a")
         return GameType::Adventure;

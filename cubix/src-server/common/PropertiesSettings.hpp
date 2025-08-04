@@ -13,6 +13,7 @@
 #include "../../src/common/world/GameMode.hpp"
 #include "../../src/common/world/Difficulty.hpp"
 #include "../../src/common/server/PlayerTickPolicy.hpp"
+#include "../../src/common/util/StringUtils.hpp"
 
 class PropertiesSettings
 {

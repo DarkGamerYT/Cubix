@@ -4,9 +4,11 @@
 
 inline AppPlatform g_AppPlatform;
 ServerNetworkHandler::ServerNetworkHandler(
+    const std::shared_ptr<Level>& level,
     ServerInstance* serverInstance,
     const ConnectionDefinition& connectionDefintion
 ) {
+    this->m_Level = level;
     this->m_ServerInstance = serverInstance;
     this->m_ConnectionDefinition = connectionDefintion;
 };
@@ -504,7 +506,10 @@ void ServerNetworkHandler::handle(
     auto& clients = this->m_Players.at(networkIdentifier);
 
     clients.emplace(SubClientId::PrimaryClient,
-        std::make_shared<Player>(networkPeer, this, packet.connectionRequest, SubClientId::PrimaryClient));
+        std::make_shared<Player>(
+            this->m_Level,
+            networkPeer, this,
+            packet.connectionRequest, SubClientId::PrimaryClient));
 
     const auto& player = clients.at(SubClientId::PrimaryClient);
     if (player == nullptr)
@@ -614,7 +619,10 @@ void ServerNetworkHandler::handle(
     // Create a new player
     auto& clients = this->m_Players.at(networkIdentifier);
     clients.insert_or_assign(subClientId,
-        std::make_shared<Player>(networkPeer, this, packet.connectionRequest, subClientId));
+        std::make_shared<Player>(
+            this->m_Level,
+            networkPeer, this,
+            packet.connectionRequest, subClientId));
 
     const auto& player = clients.at(subClientId);
     if (player == nullptr)
@@ -705,11 +713,9 @@ void ServerNetworkHandler::handle(
             resourcePackStack.baseGameVersion = SharedConstants::CurrentGameVersion.asString();
             resourcePackStack.includeEditorPacks = false;
 
-            resourcePackStack.experiments.list = {
-                {"upcoming_creator_features", true},
-                {"gametest", true}
-            };
-            resourcePackStack.experiments.experimentsEverEnabled = true;
+            const auto& levelSettings = this->m_Level->getLevelSettings();
+            resourcePackStack.experiments.experimentList = levelSettings->getExperiments();
+            resourcePackStack.experiments.experimentsEverEnabled = levelSettings->hasHadExperiments();
 
             player->sendNetworkPacket(resourcePackStack);
             break;

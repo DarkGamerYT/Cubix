@@ -8,17 +8,6 @@
 class ItemRegistry
 {
 public:
-    static inline Item INVALID; // Invalid Item
-
-    static Item AIR;
-
-    static Item ACACIA_BOAT;
-    static Item GLOW_BERRIES;
-
-private:
-    static inline std::vector<std::pair<std::string, Item>> sItems{};
-
-public:
     static void initialize();
 
     static void registerItem(const Item& item) {
@@ -29,7 +18,17 @@ public:
     static std::vector<Item> getAll();
 
 private:
+    static inline std::vector<std::pair<std::string, Item>> sItems{};
+
     static void updateNetworkIdCounter();
+
+public:
+    static inline Item INVALID; // Invalid Item
+
+    static Item AIR;
+
+    static Item ACACIA_BOAT;
+    static Item GLOW_BERRIES;
 };
 
 #endif // !ITEMREGISTRY_HPP

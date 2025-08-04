@@ -6,16 +6,21 @@
 #include "../../../network/packets/PlayerListPacket.hpp"
 
 Player::Player(
-    std::shared_ptr<NetworkPeer> networkPeer, ServerNetworkHandler* networkHandler,
+    const std::shared_ptr<Level>& level,
+    const std::shared_ptr<NetworkPeer>& networkPeer, ServerNetworkHandler* networkHandler,
     std::unique_ptr<ConnectionRequest>& connection, const SubClientId subClientId
-) : m_networkHandler(networkHandler), m_networkPeer(std::move(networkPeer)), m_connection(std::move(connection))
-{
-    this->m_displayName = this->m_connection->getThirdPartyName();
-    this->m_subClientId = subClientId;
+) {
+    this->mLevel = level;
+    this->mNetworkHandler = networkHandler;
+    this->mNetworkPeer = networkPeer;
+    this->mConnection = std::move(connection);
+
+    this->mDisplayName = this->mConnection->getThirdPartyName();
+    this->mSubClientId = subClientId;
 };
 
 void Player::updateSkin(SerializedSkin& skin) {
-    this->m_skin = std::move(skin);
+    this->mSkin = std::move(skin);
 };
 
 void Player::move(const Vec3& position) {
@@ -35,7 +40,7 @@ void Player::tick() {
     const int renderDistance = 5;
 
     NetworkChunkPublisherUpdatePacket networkChunkPublisher;
-    networkChunkPublisher.position = this->getPosition();
+    networkChunkPublisher.position = BlockPos(this->getPosition());
     networkChunkPublisher.radius = renderDistance << 4;
 
     this->sendNetworkPacket(networkChunkPublisher);
@@ -113,7 +118,7 @@ void Player::tick() {
 void Player::openInventory() const {
     ContainerOpenPacket containerOpen;
     containerOpen.targetActorId = 0;
-    containerOpen.position = { 0, 0, 0 };
+    containerOpen.position = BlockPos{ 0.0, 0.0, 0.0 };
     containerOpen.containerId = 0;
     containerOpen.containerType = ContainerType::INVENTORY;
 
@@ -123,6 +128,8 @@ void Player::openInventory() const {
 void Player::doInitialSpawn() {
     // Start Game
     StartGamePacket startGame;
+    startGame.levelSettings = this->mLevel->getLevelSettings();
+
     startGame.targetActorId = 1;
     startGame.targetRuntimeId = 1;
     startGame.actorGameType = GameType::Default;
@@ -130,81 +137,17 @@ void Player::doInitialSpawn() {
     startGame.position = { 0, 0, 0 };
     startGame.rotation = { 0, 0 };
 
-    Nbt::CompoundTag playerData;
+    const Nbt::CompoundTag playerData;
     startGame.playerPropertyData = playerData;
 
-    startGame.settings.seed = 1;
-    startGame.settings.spawnSettings.type = 0;
-    startGame.settings.spawnSettings.userDefinedBiomeName = "plains";
-    startGame.settings.spawnSettings.dimension = 0;
-
-    startGame.settings.playerPermissions = CommandPermissionLevel::Internal;
-    startGame.settings.baseGameVersion = SharedConstants::CurrentGameVersion.asString();
-    startGame.settings.generatorType = GeneratorType::Overworld;
-    startGame.settings.gameType = GameType::Creative;
-    startGame.settings.newNether = true;
-    startGame.settings.difficulty = Difficulty::Normal;
-    startGame.settings.isHardcode = false;
-    startGame.settings.defaultSpawnBlock = { 0, 0, 0 };
-
-    // 4 chunks (64x64 blocks), 6 chunks (96x96 blocks), 8 chunks (128x128 blocks)
-    startGame.settings.serverTickRange = 64 >> 4;
-
-    startGame.settings.editorWorldType = 0;
-    startGame.settings.isCreatedInEditor = false;
-
-    startGame.settings.isFromLockedTemplate = false;
-    startGame.settings.educationEditionOffer = 0;
-    startGame.settings.educationFeatures = false;
-    startGame.settings.educationProductId = "";
-    startGame.settings.platformLockedContent = false;
-    startGame.settings.hasLockedBehaviorPack = false;
-    startGame.settings.hasLockedResourcePack = false;
-    startGame.settings.createdFromTemplate = false;
-    startGame.settings.isTemplateWithLockedSettings = false;
-    startGame.settings.overrideForceExperimentalGameplay = false;
-
-    startGame.settings.customSkinsDisabled = false;
-    startGame.settings.emoteChatMuted = false;
-    startGame.settings.disablePlayerInteractions = false;
-    startGame.settings.personaDisabled = false;
-    startGame.settings.msaGamertagsOnly = false;
-    startGame.settings.chatRestrictionLevel = 0x00;
-
-    startGame.settings.achievementsDisabled = true;
-    startGame.settings.bonusChestEnabled = false;
-    startGame.settings.startWithMap = false;
-    startGame.settings.commandsEnabled = true;
-    startGame.settings.dayCycleStopTime = 2000;
-    startGame.settings.rainLevel = 2000;
-    startGame.settings.lightningLevel = 0;
-    startGame.settings.texturepacksRequired = false;
-
-    startGame.settings.experiments.list = {
-        {"upcoming_creator_features", true},
-        {"gametest", true}
-    };
-    startGame.settings.experiments.experimentsEverEnabled = false;
-    //const auto& gameRules = this->mServerLevel->getGameRules();
-    //startGame.settings.gameRules = gameRules.getRules();
-
-    startGame.settings.limitedWorldDepth = 16;
-    startGame.settings.limitedWorldWidth = 16;
-    startGame.settings.onlySpawnV1Villagers = false;
-
-    startGame.settings.multiplayerEnabled = true;
-    startGame.settings.lanBroadcasting = true;
-    startGame.settings.xboxBroadcastSettings = 6;
-    startGame.settings.platformBroadcastSettings = 6;
-
-    startGame.templateContentIdentity = Util::UUID().toString();
+    startGame.templateContentIdentity = Util::UUID{};
     startGame.isTrial = false;
 
-    startGame.movementSettings.authorityMode = 0;
+    // Movement settings
     startGame.movementSettings.rewindHistorySize = 3200;
     startGame.movementSettings.serverAuthoratativeBlockBreaking = false;
 
-    startGame.currentLevelTime = 0;
+    startGame.tick = 0;
     startGame.enchantmentSeed = 1;
     startGame.enableItemStackNetManager = true;
     startGame.serverVersion = "Cubix v" + SharedConstants::CurrentGameVersion.asString();
@@ -214,23 +157,19 @@ void Player::doInitialSpawn() {
     startGame.blockNetworkIdsAreHashes = true;
     startGame.networkPermissions.serverAuthSoundEnabled = true;
 
-    startGame.multiplayerCorrelationId = this->m_networkPeer->getNetworkServer()->m_Identifier.getCorrelationId();
+    startGame.multiplayerCorrelationId = this->mNetworkPeer->getNetworkServer()->m_Identifier.getCorrelationId();
 
     startGame.levelId = "test";
     startGame.levelName = "Test";
-
-    startGame.settings.serverId = "";
-    startGame.settings.worldId = "";
-    startGame.settings.scenarioId = "";
 
     this->sendNetworkPacket(startGame);
 
     Logger::log(Logger::LogLevel::Info,
         "Player spawned: {}, XUID: {}, Pfid: {}",
             this->getDisplayName(),
-            this->m_connection->getXuid(), this->m_connection->getPlayFabId());
+            this->mConnection->getXuid(), this->mConnection->getPlayFabId());
 
-    if (this->m_subClientId == SubClientId::PrimaryClient)
+    if (this->mSubClientId == SubClientId::PrimaryClient)
     {
         // Item Registry
         ItemRegistryPacket itemRegistry;
@@ -263,8 +202,8 @@ void Player::doInitialSpawn() {
 };
 
 void Player::disconnect(DisconnectReason reason, bool skipMessage, const std::string& message) const {
-    this->m_networkHandler->disconnectClient(
-        this->m_networkPeer->getNetworkIdentifier(),
-        this->m_subClientId,
+    this->mNetworkHandler->disconnectClient(
+        this->mNetworkPeer->getNetworkIdentifier(),
+        this->mSubClientId,
         reason, skipMessage, message);
 };

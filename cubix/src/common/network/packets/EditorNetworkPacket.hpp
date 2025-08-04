@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../nbt/NbtIo.hpp"
 
-class EditorNetworkPacket : public Packet
+class EditorNetworkPacket final : public Packet
 {
 public:
     bool routeToManager;

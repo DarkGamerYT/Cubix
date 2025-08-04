@@ -3,7 +3,7 @@
 
 #include "../CompressionType.hpp"
 
-class NetworkSettingsPacket : public Packet
+class NetworkSettingsPacket final : public Packet
 {
 public:
     uint16_t compressionThreshold;

@@ -3,7 +3,7 @@
 #include "../../server/commands/CommandOrigin.hpp"
 #include "../../server/commands/CommandOutput.hpp"
 
-class CommandOutputPacket : public Packet
+class CommandOutputPacket final : public Packet
 {
 public:
     std::unique_ptr<CommandOrigin> commandOrigin;

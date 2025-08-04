@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../ConnectionRequest.hpp"
 
-class LoginPacket : public Packet
+class LoginPacket final : public Packet
 {
 public:
     int protocol = SharedConstants::NetworkProtocolVersion;

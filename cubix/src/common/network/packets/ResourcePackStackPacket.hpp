@@ -1,6 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
-#include "./types/Experiments.hpp"
+
+#include "../../world/level/storage/Experiments.hpp"
 
 struct Addon
 {
@@ -16,15 +17,15 @@ struct TexturePack
     std::string subPackName;
 };
 
-class ResourcePackStackPacket : public Packet
+class ResourcePackStackPacket final : public Packet
 {
 public:
-    bool texturePackRequired;
+    bool texturePackRequired = false;
     std::vector<Addon> addons;
     std::vector<TexturePack> texturePacks;
     std::string baseGameVersion;
     Experiments experiments;
-    bool includeEditorPacks;
+    bool includeEditorPacks = false;
 
 public:
     ResourcePackStackPacket()

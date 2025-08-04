@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "../../world/GameMode.hpp"
 
-class UpdatePlayerGameTypePacket : public Packet
+class UpdatePlayerGameTypePacket final : public Packet
 {
 public:
     GameType gameType = GameType::Survival;

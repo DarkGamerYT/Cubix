@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class RequestNetworkSettingsPacket : public Packet
+class RequestNetworkSettingsPacket final : public Packet
 {
 public:
     uint32_t protocol;

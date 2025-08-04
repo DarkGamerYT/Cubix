@@ -3,7 +3,7 @@
 
 #include "../../registry/CommandRegistry.hpp"
 
-class AvailableCommandsPacket : public Packet
+class AvailableCommandsPacket final : public Packet
 {
 public:
     AvailableCommandsPacket()

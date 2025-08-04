@@ -3,7 +3,7 @@
 #include "../../world/level/BlockPos.hpp"
 #include "../../world/level/ChunkPos.hpp"
 
-class NetworkChunkPublisherUpdatePacket : public Packet
+class NetworkChunkPublisherUpdatePacket final : public Packet
 {
 public:
     BlockPos position;

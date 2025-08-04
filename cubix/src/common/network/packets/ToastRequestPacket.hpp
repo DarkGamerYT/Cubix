@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ToastRequestPacket : public Packet
+class ToastRequestPacket final : public Packet
 {
 public:
     std::string title;

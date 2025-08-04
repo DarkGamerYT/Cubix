@@ -14,9 +14,6 @@ class CommandRegistry
 public:
     using Commands = std::unordered_map<std::string, std::shared_ptr<Command>>;
 
-private:
-    static std::vector<std::string> GAMEMODES;
-
 public:
     static void initialize(const bool isEdu);
 
@@ -81,6 +78,9 @@ protected:
     static inline std::vector<std::string> sSoftEnums{};
     static inline EnumValues sSoftEnumLookup{};
     static inline std::vector<std::string> sSoftEnumValues{};
+
+private:
+    static std::vector<std::string> GAMEMODES;
 };
 
 #endif // !COMMANDREGISTRY_HPP

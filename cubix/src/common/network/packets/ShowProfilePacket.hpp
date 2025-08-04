@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ShowProfilePacket : public Packet
+class ShowProfilePacket final : public Packet
 {
 public:
     std::string xuid;

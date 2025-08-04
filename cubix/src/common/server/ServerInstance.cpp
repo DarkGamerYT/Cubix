@@ -6,7 +6,7 @@
 
 ServerInstance::ServerInstance()
 {
-
+    this->m_Level = std::make_shared<Level>();
 };
 ServerInstance::~ServerInstance()
 {
@@ -18,6 +18,7 @@ ServerInstance::~ServerInstance()
 };
 
 void ServerInstance::initializeServer(
+    const LevelSettings& levelSettings,
     const PlayerTickPolicy tickPolicy,
     const ConnectionDefinition& connectionDefintion
 ) {
@@ -28,7 +29,9 @@ void ServerInstance::initializeServer(
 
     this->initializeCommands();
 
-    this->m_Network = std::make_shared<ServerNetworkHandler>(this, connectionDefintion);
+    this->m_Level->initialize(levelSettings);
+
+    this->m_Network = std::make_shared<ServerNetworkHandler>(this->m_Level, this, connectionDefintion);
     this->m_Network->setTransportLayer(TransportLayer::RakNet);
 
     this->m_PlayerTickPolicy = tickPolicy;

@@ -15,7 +15,7 @@ struct ResourcePack {
     std::string cdnUrl;
 };
 
-class ResourcePacksInfoPacket : public Packet
+class ResourcePacksInfoPacket final : public Packet
 {
 public:
     bool resourcePackRequired = false;

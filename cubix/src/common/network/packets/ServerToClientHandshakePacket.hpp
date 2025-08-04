@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ServerToClientHandshakePacket : public Packet
+class ServerToClientHandshakePacket final : public Packet
 {
 public:
     std::string handshakeWebtoken;

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ShowStoreOfferPacket : public Packet
+class ShowStoreOfferPacket final : public Packet
 {
 public:
     enum class RedirectType

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class TransferPacket : public Packet
+class TransferPacket final : public Packet
 {
 public:
     std::string address;

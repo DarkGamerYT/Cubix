@@ -1,11 +1,12 @@
 #include "ChunkPos.hpp"
-const std::string ChunkPos::toString() const
+std::string ChunkPos::toString() const
 {
     std::stringstream stream;
-    stream << "ChunkPos(";
-    stream << std::to_string(this->x) << ",";
-    stream << std::to_string(this->z);
-    stream << ")";
+    stream
+        << "ChunkPos("
+        << std::to_string(this->x) << ","
+        << std::to_string(this->z)
+        << ")";
 
     return stream.str();
 };

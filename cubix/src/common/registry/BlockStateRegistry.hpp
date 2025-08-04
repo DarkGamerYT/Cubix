@@ -5,6 +5,14 @@
 
 class BlockStateRegistry
 {
+private:
+    static inline std::vector<BlockState> sStates{};
+
+public:
+    static void initialize();
+
+    static const std::vector<BlockState>& getAll() { return sStates; };
+
 public:
     static BlockState ACTIVE;
     static BlockState AGE;
@@ -68,14 +76,6 @@ public:
     static BlockState WEEPING_VINES_AGE;
     static BlockState WEIRDO_DIRECTION;
     static BlockState WOOD_TYPE;
-
-private:
-    static inline std::vector<BlockState> sStates{};
-
-public:
-    static void initialize();
-
-    static const std::vector<BlockState>& getAll() { return sStates; };
 };
 
 #endif // !BLOCKSTATEREGISTRY_HPP

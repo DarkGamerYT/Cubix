@@ -2,7 +2,7 @@
 #include "../Packet.hpp"
 #include "ContainerOpenPacket.hpp"
 
-class ContainerClosePacket : public Packet
+class ContainerClosePacket final : public Packet
 {
 public:
     uint8_t containerId;

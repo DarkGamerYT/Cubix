@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class SetCommandsEnabledPacket : public Packet
+class SetCommandsEnabledPacket final : public Packet
 {
 public:
     bool commandsEnabled;

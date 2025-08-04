@@ -4,7 +4,7 @@
 #include "../../registry/ItemRegistry.hpp"
 #include "../../nbt/NbtIo.hpp"
 
-class ItemRegistryPacket : public Packet
+class ItemRegistryPacket final : public Packet
 {
 public:
     ItemRegistryPacket()

@@ -15,7 +15,7 @@ enum class PlayStatus
     EditorMismatchVanillaToEditor = 0x09
 };
 
-class PlayStatusPacket : public Packet
+class PlayStatusPacket final : public Packet
 {
 public:
     PlayStatus status;

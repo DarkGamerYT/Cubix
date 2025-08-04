@@ -146,10 +146,10 @@ void ItemGroupRegistry::initialize()
 
 void ItemGroupRegistry::updateIndexCounter()
 {
-    if (ItemGroupRegistry::s_Groups.empty())
+    if (ItemGroupRegistry::sGroups.empty())
         return;
 
-    const ItemGroup& lastGroup = ItemGroupRegistry::s_Groups.back();
+    const ItemGroup& lastGroup = ItemGroupRegistry::sGroups.back();
     groupIndexCounter = lastGroup.getIndex();
 };
 

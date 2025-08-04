@@ -20,7 +20,7 @@ enum class TeleportationCause {
     Behavior    = 4
 };
 
-class MovePlayerPacket : public Packet
+class MovePlayerPacket final : public Packet
 {
 public:
     int64_t actorRuntimeId;

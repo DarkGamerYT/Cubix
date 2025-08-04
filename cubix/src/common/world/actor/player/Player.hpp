@@ -4,6 +4,7 @@
 #include "SerializedSkin.hpp"
 
 #include "../Actor.hpp"
+#include "../../level/Level.hpp"
 
 #include "../../../SubClientId.hpp"
 #include "../../../network/NetworkPeer.hpp"
@@ -14,24 +15,26 @@
 class ServerNetworkHandler;
 class Player : public Actor {
 private:
-    ServerNetworkHandler* m_networkHandler;
-    std::shared_ptr<NetworkPeer> m_networkPeer;
-    std::unique_ptr<ConnectionRequest> m_connection;
-    SubClientId m_subClientId;
+    ServerNetworkHandler* mNetworkHandler;
+    std::shared_ptr<NetworkPeer> mNetworkPeer;
+    std::unique_ptr<ConnectionRequest> mConnection;
+    SubClientId mSubClientId;
 
-    std::string m_displayName = "Steve";
-    SerializedSkin m_skin{};
+    std::string mDisplayName = "Steve";
+    SerializedSkin mSkin{};
+    std::shared_ptr<Level> mLevel;
 
 public:
     Player(
-        std::shared_ptr<NetworkPeer> networkPeer, ServerNetworkHandler* networkHandler,
+        const std::shared_ptr<Level>& level,
+        const std::shared_ptr<NetworkPeer> &networkPeer, ServerNetworkHandler* networkHandler,
         std::unique_ptr<ConnectionRequest>& connection, SubClientId subClientId);
 
-    std::unique_ptr<ConnectionRequest>& getConnection() { return m_connection; };
+    std::unique_ptr<ConnectionRequest>& getConnection() { return mConnection; };
 
-    const std::string& getDisplayName() { return m_displayName; };
+    const std::string& getDisplayName() { return mDisplayName; };
 
-    SerializedSkin& getSkin() { return m_skin; };
+    SerializedSkin& getSkin() { return mSkin; };
     void updateSkin(SerializedSkin& skin);
 
     void openInventory() const;
@@ -40,7 +43,7 @@ public:
     void move(const Vec3& position) override;
     void tick() override;
 
-    unsigned int getMaxRenderDistance() const { return this->m_connection->getMaxRenderDistance(); };
+    uint16_t getMaxRenderDistance() const { return this->mConnection->getMaxRenderDistance(); };
 
     void disconnect(DisconnectReason, bool skipMessage = false, const std::string& = "disconnectionScreen.noReason") const;
 
@@ -48,7 +51,7 @@ public:
     template <typename... Args>
     requires (IsNetworkPacket<Args> && ...)
     void sendNetworkPacket(Args& ...args) const {
-        this->m_networkPeer->sendPacket(this->m_subClientId, args...);
+        this->mNetworkPeer->sendPacket(this->mSubClientId, args...);
     };
 };
 

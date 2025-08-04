@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class SetHealthPacket : public Packet
+class SetHealthPacket final : public Packet
 {
 public:
     int32_t health;

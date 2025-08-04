@@ -39,7 +39,7 @@ void DedicatedServer::start()
     Logger::log(Logger::LogLevel::Info, "Configuration: {}", BUILD_TYPE);
 
 
-    const PropertiesSettings propertiesSettings("server.properties");
+    const PropertiesSettings propertiesSettings{"server.properties"};
     if (!propertiesSettings.isPropertiesFileLoaded())
     {
         Logger::log(Logger::LogLevel::Error,
@@ -58,26 +58,28 @@ void DedicatedServer::start()
     const std::string& levelName = propertiesSettings.getLevelName();
     Logger::log(Logger::LogLevel::Info, "Level Name: {}", levelName);
 
-    const auto gameMode = propertiesSettings.getGameMode();
+    const GameType gameMode = propertiesSettings.getGameMode();
     Logger::log(Logger::LogLevel::Info,
         "GameMode: {} {}", static_cast<int>(gameMode), GameMode::asString(gameMode));
 
-    const auto difficulty = propertiesSettings.getDifficulty();
+    const Difficulty difficulty = propertiesSettings.getDifficulty();
     Logger::log(Logger::LogLevel::Info,
         "Difficulty: {} {}", static_cast<int>(difficulty), DifficultyUtils::asString(difficulty));
 
-    /*LevelSettings levelSettings;
-    levelSettings.setLevelName(levelName);
-    levelSettings.parseSeed(propertiesSettings.getLevelSeed());
+    const LevelSeed64 levelSeed{ propertiesSettings.getLevelSeed() };
+
+    LevelSettings levelSettings{};
+    //levelSettings.setLevelName(levelName);
+    levelSettings.setSeed(levelSeed);
     levelSettings.setGameType(gameMode);
-    levelSettings.setDifficulty(difficulty);*/
+    levelSettings.setDifficulty(difficulty);
 
 
     const unsigned short portV4 = propertiesSettings.getServerPort();
     const unsigned short portV6 = propertiesSettings.getServerPortV6();
 
     // Start server
-    m_ServerInstance.initializeServer(propertiesSettings.getPlayerTickPolicy(), {
+    m_ServerInstance.initializeServer(levelSettings, propertiesSettings.getPlayerTickPolicy(), {
         propertiesSettings.getServerName(),
         propertiesSettings.getMaxPlayers(),
         { portV4, portV6 },

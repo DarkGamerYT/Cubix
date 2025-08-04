@@ -17,7 +17,7 @@ enum class TextType
     TextObjectAnnouncement
 };
 
-class TextPacket : public Packet
+class TextPacket final : public Packet
 {
 public:
     TextType type;

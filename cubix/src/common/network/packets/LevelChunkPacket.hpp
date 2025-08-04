@@ -3,7 +3,7 @@
 #include "../../world/level/BlockPos.hpp"
 #include "../../world/level/ChunkPos.hpp"
 
-class LevelChunkPacket : public Packet
+class LevelChunkPacket final : public Packet
 {
 public:
     ChunkPos chunkPosition;

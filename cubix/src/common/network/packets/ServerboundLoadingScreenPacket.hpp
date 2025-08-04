@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-class ServerboundLoadingScreenPacket : public Packet
+class ServerboundLoadingScreenPacket final : public Packet
 {
 public:
     bool isEnd = false;
