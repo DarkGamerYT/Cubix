@@ -2,11 +2,11 @@
 
 #include "../../src/win/AppPlatform_win32.hpp"
 
-DedicatedServer g_DedicatedServer;
-inline AppPlatform_win32 g_AppPlatform;
+DedicatedServer gDedicatedServer;
+inline AppPlatform_win32 gAppPlatform;
 int main(int argc, char* argv[])
 {
-    g_DedicatedServer.start();
-    g_DedicatedServer.shutdown();
+    gDedicatedServer.start();
+    gDedicatedServer.shutdown();
     std::cout << "Quit correctly." << std::endl;
 };

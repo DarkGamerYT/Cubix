@@ -4,7 +4,7 @@ LogBlock::LogBlock(const std::string& identifier)
 {
     this->setState(BlockStateRegistry::PILLAR_AXIS);
 };
-LogBlock::LogBlock(const std::string& identifier, int id)
+LogBlock::LogBlock(const std::string& identifier, const int id)
     : Block(identifier, id)
 {
     this->setState(BlockStateRegistry::PILLAR_AXIS);

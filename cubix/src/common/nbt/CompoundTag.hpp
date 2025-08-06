@@ -7,7 +7,7 @@
 typedef std::unordered_map<std::string, Nbt::CompoundTagVariant> TagMap;
 namespace Nbt
 {
-    class CompoundTag : public Nbt::Tag, public TagMap
+    class CompoundTag final : public Nbt::Tag, public TagMap
     {
     public:
         using TagMap::unordered_map;
@@ -28,6 +28,7 @@ namespace Nbt
         std::unique_ptr<Tag> copy() const override {
             return std::make_unique<CompoundTag>(*this);
         };
+
         std::string toString() const override {
             std::stringstream stream;
             for (const auto& [key, value] : *this)

@@ -8,22 +8,22 @@
 
 class CommandOutput {
 private:
-    CommandOutputType m_type;
-    uint32_t m_successCount = 0;
-    std::string m_data;
-    std::vector<CommandOutputMessage> m_messages;
+    CommandOutputType mType;
+    uint32_t mSuccessCount = 0;
+    std::string mData;
+    std::vector<CommandOutputMessage> mMessages;
 
 public:
     explicit CommandOutput(const CommandOutputType type = CommandOutputType::None)
-        : m_type(type) {};
+        : mType(type) {};
 
-    CommandOutputType getType() const { return this->m_type; };
-    uint32_t getSuccessCount() const { return this->m_successCount; };
+    CommandOutputType getType() const { return this->mType; };
+    uint32_t getSuccessCount() const { return this->mSuccessCount; };
 
-    std::string getData() const { return this->m_data; };
-    bool wantsData() const { return this->m_type == CommandOutputType::DataSet; };
+    std::string getData() const { return this->mData; };
+    bool wantsData() const { return this->mType == CommandOutputType::DataSet; };
 
-    const std::vector<CommandOutputMessage>& getMessages() const { return this->m_messages; };
+    const std::vector<CommandOutputMessage>& getMessages() const { return this->mMessages; };
 
     bool hasErrorMessage() const;
     void addMessage(
@@ -31,7 +31,7 @@ public:
         const std::vector<std::string>& parameters = {},
         const bool hasError = false
     ) {
-        this->m_messages.emplace_back(!hasError, message, parameters);
+        this->mMessages.emplace_back(!hasError, message, parameters);
     };
 
     void error(const std::string& message, const std::vector<std::string>& parameters = {})

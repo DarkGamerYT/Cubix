@@ -1,7 +1,7 @@
 #pragma once
 #include "../Command.hpp"
 
-class TestCommand : public Command
+class TestCommand final : public Command
 {
 public:
     explicit TestCommand(const CommandPermissionLevel permissionLevel)

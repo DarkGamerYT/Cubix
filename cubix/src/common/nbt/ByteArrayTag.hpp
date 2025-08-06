@@ -6,7 +6,7 @@
 
 namespace Nbt
 {
-    class ByteArrayTag : public Nbt::Tag, public std::vector<uint8_t>
+    class ByteArrayTag final : public Nbt::Tag, public std::vector<uint8_t>
     {
     public:
         using std::vector<uint8_t>::vector;
@@ -15,6 +15,7 @@ namespace Nbt
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<ByteArrayTag>(*this);
         };
+
         std::string toString() const override {
             size_t size = this->size();
 
@@ -23,7 +24,7 @@ namespace Nbt
 
             for (size_t i = 0; i < size; i++)
             {
-                uint8_t value = this->at(i);
+                const uint8_t value = this->at(i);
                 stream << std::setw(2) << (value & 0xFF);
 
                 if (i < size - 1)

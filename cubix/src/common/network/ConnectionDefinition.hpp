@@ -7,10 +7,12 @@
 
 struct ConnectionDefinition {
     std::string serverName;
-    int maxPlayers;
     PortPair serverPorts;
-    bool isVisibleToLan;
-    bool useOnlineAuthentication;
+    int maxPlayers = SharedConstants::NetworkMaxPlayers;
+    bool isServerVisibleToLanDiscovery;
+
+    CompressionType compressionType = CompressionType::Zlib;
+    short compressionThreshold = 0;
 };
 
 #endif //CONNECTIONDEFINITION_HPP

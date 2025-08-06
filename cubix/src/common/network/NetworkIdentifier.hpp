@@ -16,48 +16,48 @@ public:
         Invalid = 2
     };
 public:
-    uint64_t m_NetherNetId = 0;
-    RakNet::RakNetGUID m_Guid = RakNet::UNASSIGNED_RAKNET_GUID;
-    NetworkIdentifier::Type m_Type = NetworkIdentifier::Type::Invalid;
+    uint64_t mNetherNetId = 0;
+    RakNet::RakNetGUID mGuid = RakNet::UNASSIGNED_RAKNET_GUID;
+    NetworkIdentifier::Type mType = NetworkIdentifier::Type::Invalid;
 
 public:
     NetworkIdentifier() = default;
 
     explicit NetworkIdentifier(const uint64_t netherNetId)
-        : m_NetherNetId(netherNetId), m_Type(NetworkIdentifier::Type::NetherNet) {};
+        : mNetherNetId(netherNetId), mType(NetworkIdentifier::Type::NetherNet) {};
 
     explicit NetworkIdentifier(RakNet::RakNetGUID const& rakId)
-        : m_Guid(rakId), m_Type(NetworkIdentifier::Type::RakNet) {};
+        : mGuid(rakId), mType(NetworkIdentifier::Type::RakNet) {};
 
     std::string getCorrelationId() const;
     uint64_t getHash() const;
     bool isUnassigned() const {
-        switch (this->m_Type)
+        switch (this->mType)
         {
             case NetworkIdentifier::Type::Invalid:
                 return true;
             case NetworkIdentifier::Type::NetherNet:
-                return this->m_NetherNetId == 0;
+                return this->mNetherNetId == 0;
             case NetworkIdentifier::Type::RakNet:
-                return this->m_Guid == RakNet::UNASSIGNED_RAKNET_GUID;
+                return this->mGuid == RakNet::UNASSIGNED_RAKNET_GUID;
         };
 
         return true;
     };
 
     bool operator==(NetworkIdentifier const& other) const {
-        if (this->m_Type != other.m_Type)
+        if (this->mType != other.mType)
             return false;
 
-        return this->m_Guid == other.m_Guid || this->m_NetherNetId == other.m_NetherNetId;
+        return this->mGuid == other.mGuid || this->mNetherNetId == other.mNetherNetId;
     };
     bool operator!=(NetworkIdentifier const& other) const { return !(*this == other); };
 
     bool operator<(NetworkIdentifier const& other) const {
-        if (this->m_Type != other.m_Type)
-            return this->m_Type < other.m_Type;
+        if (this->mType != other.mType)
+            return this->mType < other.mType;
 
-        return this->m_Guid < other.m_Guid && this->m_NetherNetId < other.m_NetherNetId;
+        return this->mGuid < other.mGuid && this->mNetherNetId < other.mNetherNetId;
     };
     bool operator>(NetworkIdentifier const& other) const { return other < *this; };
 
@@ -69,9 +69,9 @@ public:
 template <>
 struct std::hash<NetworkIdentifier> {
     size_t operator()(const NetworkIdentifier& id) const noexcept {
-        const size_t h1 = std::hash<decltype(id.m_Type)>{}(id.m_Type);
-        const size_t h2 = std::hash<decltype(id.m_Guid.g)>{}(id.m_Guid.g);
-        const size_t h3 = std::hash<decltype(id.m_NetherNetId)>{}(id.m_NetherNetId);
+        const size_t h1 = std::hash<decltype(id.mType)>{}(id.mType);
+        const size_t h2 = std::hash<decltype(id.mGuid.g)>{}(id.mGuid.g);
+        const size_t h3 = std::hash<decltype(id.mNetherNetId)>{}(id.mNetherNetId);
         return h1 ^ (h2 << 1) ^ (h3 << 2);
     };
 };;

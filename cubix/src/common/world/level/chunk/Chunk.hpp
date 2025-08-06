@@ -8,12 +8,12 @@
 class Chunk
 {
 private:
-    std::vector<SubChunk> m_subChunks;
+    std::vector<SubChunk> mSubChunks;
 
 public:
     Chunk();
 
-    const std::vector<SubChunk>& getSubChunks() const { return this->m_subChunks; };
+    const std::vector<SubChunk>& getSubChunks() const { return this->mSubChunks; };
 
     void serialize(BinaryStream& stream, bool isNetwork = false);
 };

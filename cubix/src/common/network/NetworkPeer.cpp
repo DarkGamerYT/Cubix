@@ -2,7 +2,7 @@
 #include "NetworkServer.hpp"
 
 BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
-    CompressionType compressionType = this->m_Compression;
+    CompressionType compressionType = this->mCompression;
     if (this->isCompressed())
     {
         const auto& byte = stream.readByte();
@@ -95,18 +95,18 @@ BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
 };
 
 void NetworkPeer::sendStream(const BinaryStream& dataStream, const NetworkPeer::Reliability reliability) const {
-    if (this->m_NetworkServer == nullptr)
+    if (this->mNetworkServer == nullptr)
         return;
 
     BinaryStream packetStream;
     packetStream.writeByte(0xFE);
 
     const size_t rawSize = dataStream.size();
-    CompressionType compressionType = this->m_Compression;
+    CompressionType compressionType = this->mCompression;
 
     if (this->isCompressed())
     {
-        if (rawSize < this->m_CompressionThreshold)
+        if (rawSize < this->mCompressionThreshold)
             compressionType = CompressionType::None;
 
         packetStream.writeByte(static_cast<uint8_t>(compressionType));
@@ -169,5 +169,5 @@ void NetworkPeer::sendStream(const BinaryStream& dataStream, const NetworkPeer::
 
     /*Logger::log(Logger::LogLevel::Debug,
         "Target: {} - {}: {}", static_cast<uint8_t>(subClientId), packet.getName(), packetStream.toString());*/
-    this->m_NetworkServer->sendPacket(this->m_NetworkIdentifier, packetStream, reliability);
+    this->mNetworkServer->sendPacket(this->mNetworkIdentifier, packetStream, reliability);
 };

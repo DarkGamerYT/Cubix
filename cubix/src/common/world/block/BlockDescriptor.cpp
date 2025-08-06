@@ -2,11 +2,10 @@
 #include "../../nbt/NbtIo.hpp"
 std::unique_ptr<Nbt::CompoundTag> BlockDescriptor::serialise() const
 {
-    std::unique_ptr<Nbt::CompoundTag> root = this->m_Block->serialise();
-    return root;
+    return this->mBlock->serialise();
 };
 
 int32_t BlockDescriptor::hash() const
 {
-    return -1;
+    return Block::hash(*this->mBlock);
 };

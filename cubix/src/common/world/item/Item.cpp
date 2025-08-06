@@ -10,9 +10,9 @@ std::unique_ptr<Nbt::CompoundTag> Item::buildNetworkTag() const
     return std::make_unique<Nbt::CompoundTag>(data);
 };
 
-ItemGroup& Item::defaultCreativeGroup(Item& item)
+ItemGroup& Item::defaultCreativeGroup(const Item& item)
 {
-    if (item.m_BlockId != 0)
+    if (item.mBlockId != 0)
     {
         return ItemGroupRegistry::PLANKS;
     }

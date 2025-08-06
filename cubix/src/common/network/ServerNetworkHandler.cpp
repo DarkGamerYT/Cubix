@@ -4,13 +4,15 @@
 
 inline AppPlatform g_AppPlatform;
 ServerNetworkHandler::ServerNetworkHandler(
-    const std::shared_ptr<Level>& level,
+    const std::shared_ptr<ServerLevel>& level,
     ServerInstance* serverInstance,
-    const ConnectionDefinition& connectionDefintion
+    const ConnectionDefinition& connectionDefintion,
+    const bool requireOnlineAuthentication
 ) {
-    this->m_Level = level;
-    this->m_ServerInstance = serverInstance;
-    this->m_ConnectionDefinition = connectionDefintion;
+    this->mLevel = level;
+    this->mServerInstance = serverInstance;
+    this->mConnectionDefinition = connectionDefintion;
+    this->mRequireOnlineAuthentication = requireOnlineAuthentication;
 };
 
 ServerNetworkHandler::~ServerNetworkHandler()
@@ -23,50 +25,71 @@ void ServerNetworkHandler::initializeNetwork()
     switch (this->getTransportLayer())
     {
         case TransportLayer::RakNet:
-            this->m_NetworkServer = std::make_unique<RakNetServer>(this); break;
+            this->mNetworkServer = std::make_unique<RakNetServer>(this); break;
         case TransportLayer::NetherNet:
-            this->m_NetworkServer = std::make_unique<NetherNetServer>(this); break;
+            this->mNetworkServer = std::make_unique<NetherNetServer>(this); break;
 
         default: return;
     };
     
     Logger::log(Logger::LogLevel::Debug,
-        "NetworkSession started with TransportLayer ({})",
+        "Network session started with TransportLayer ({})",
             static_cast<int>(this->getTransportLayer()));
     Logger::log(Logger::LogLevel::Debug,
-        "Multiplayer correlation ID: {}", this->m_NetworkServer->m_Identifier.getCorrelationId());
+        "Multiplayer Correlation Id: {}", this->mNetworkServer->mIdentifier.getCorrelationId());
 
-    this->m_NetworkServer->startServer(
-        this->m_ConnectionDefinition.serverPorts,
-        this->m_ConnectionDefinition.maxPlayers);
+    this->mNetworkServer->startServer(
+        this->mConnectionDefinition.serverPorts,
+        this->mConnectionDefinition.maxPlayers);
+};
+
+std::vector<std::shared_ptr<NetworkPeer>> ServerNetworkHandler::getConnections() const {
+    std::vector<std::shared_ptr<NetworkPeer>> peers;
+    for (const auto& networkPeer : this->mConnections | std::views::values)
+        peers.emplace_back(networkPeer);
+
+    return peers;
+};
+std::vector<std::shared_ptr<Player>> ServerNetworkHandler::getPlayers() const {
+    std::vector<std::shared_ptr<Player>> players;
+    for (const auto& client : this->mPlayers | std::views::values)
+        for (const auto& player : client | std::views::values)
+        {
+            if (player == nullptr)
+                continue;
+
+            players.emplace_back(player);
+        };
+
+    return players;
 };
 
 void ServerNetworkHandler::shutdown() {
-    for (const auto &clients: this->m_Players | std::views::values)
+    for (const auto &clients: this->mPlayers | std::views::values)
     {
         const auto& player = clients.at(SubClientId::PrimaryClient);
         player->disconnect(DisconnectReason::RequestServerShutdown,
             false, "disconnectionScreen.hostSuspended");
     };
 
-    this->m_NetworkServer->stopServer();
-    if (this->m_ServerInstance->getInstanceState() == ServerInstance::InstanceState::Running)
+    this->mNetworkServer->stopServer();
+    if (this->mServerInstance->getInstanceState() == ServerInstance::InstanceState::Running)
     {
-        this->m_ServerInstance->shutdown();
+        this->mServerInstance->shutdown();
     };
 };
 
 inline const std::string& serverVersion = SharedConstants::CurrentGameVersion.asString();
 void ServerNetworkHandler::onTick(uint32_t nTick)
 {
-    if (this->m_ServerInstance->getInstanceState() != ServerInstance::InstanceState::Running)
+    if (this->mServerInstance->getInstanceState() != ServerInstance::InstanceState::Running)
         return;
 
-    this->m_NetworkServer->update();
+    this->mNetworkServer->update();
 
     // Unconnected Pong
-    const bool isEducationEdition = false;
-    const bool isNintendoLimited = false;
+    constexpr bool isEducationEdition = false;
+    constexpr bool isNintendoLimited = false;
 
     std::string unconnectedPong = std::format(
         "{};{};{};{};{};{};{};{};{};{};{};{};",
@@ -75,24 +98,24 @@ void ServerNetworkHandler::onTick(uint32_t nTick)
         "Dedicated Server",
         std::to_string(SharedConstants::NetworkProtocolVersion),
         serverVersion,
-        std::to_string(this->m_Players.size()),
-        std::to_string(this->m_ConnectionDefinition.maxPlayers),
-        std::to_string(this->m_NetworkServer->m_Identifier.getHash()),
+        std::to_string(this->mPlayers.size()),
+        std::to_string(this->mConnectionDefinition.maxPlayers),
+        std::to_string(this->mNetworkServer->mIdentifier.getHash()),
         "Bedrock level",
         "Survival",
         std::to_string(!isNintendoLimited),
-        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV4),
-        std::to_string(this->m_ConnectionDefinition.serverPorts.mPortV6));
+        std::to_string(this->mConnectionDefinition.serverPorts.mPortV4),
+        std::to_string(this->mConnectionDefinition.serverPorts.mPortV6));
 
     unconnectedPong.insert(unconnectedPong.begin(), static_cast<signed char>(unconnectedPong.size()));
     unconnectedPong.insert(unconnectedPong.begin(), 0x00);
 
-    this->m_NetworkServer->m_UnconnectedPong = unconnectedPong;
+    this->mNetworkServer->mUnconnectedPong = unconnectedPong;
 };
 
 void ServerNetworkHandler::onTickPlayers(uint32_t nTick) {
     std::thread([this, nTick] {
-        for (const auto& client : this->m_Players | std::views::values)
+        for (const auto& client : this->mPlayers | std::views::values)
             for (const auto& player : client | std::views::values)
             {
                 if (player == nullptr)
@@ -105,35 +128,34 @@ void ServerNetworkHandler::onTickPlayers(uint32_t nTick) {
 
 void ServerNetworkHandler::onConnect(NetworkIdentifier& networkIdentifier)
 {
-    const auto& networkPeer = std::make_shared<NetworkPeer>(networkIdentifier, this->m_NetworkServer.get());
-    this->m_Connections.emplace(networkIdentifier, networkPeer);
+    const auto& networkPeer = std::make_shared<NetworkPeer>(networkIdentifier, this->mNetworkServer.get());
+    this->mConnections.emplace(networkIdentifier, networkPeer);
 };
 
 void ServerNetworkHandler::onDisconnect(const NetworkIdentifier& networkIdentifier)
 {
-    if (!this->m_Connections.contains(networkIdentifier))
+    if (!this->mConnections.contains(networkIdentifier))
         return;
 
-    if (this->m_Players.contains(networkIdentifier))
+    if (this->mPlayers.contains(networkIdentifier))
     {
-        const auto& clients = this->m_Players.at(networkIdentifier);
-        for (const auto& player : clients | std::views::values)
+        for (const auto& player : this->mPlayers.at(networkIdentifier) | std::views::values)
         {
-            if (player != nullptr)
-            {
-                const auto& connection = player->getConnection();
+            if (player == nullptr)
+                continue;
 
-                Logger::log(Logger::LogLevel::Info,
-                    "Player disconnected: {}, XUID: {}, Pfid: {}",
-                        player->getDisplayName(),
-                        connection->getXuid(), connection->getPlayFabId());
-            };
+            const auto& connection = player->getConnection();
+
+            Logger::log(Logger::LogLevel::Info,
+                "Player disconnected: {}, XUID: {}, Pfid: {}",
+                player->getDisplayName(),
+                connection->getXuid(), connection->getPlayFabId());
         };
 
-        this->m_Players.erase(networkIdentifier);
+        this->mPlayers.erase(networkIdentifier);
     };
 
-    this->m_Connections.erase(networkIdentifier);
+    this->mConnections.erase(networkIdentifier);
 };
 
 void ServerNetworkHandler::disconnectClient(
@@ -143,7 +165,7 @@ void ServerNetworkHandler::disconnectClient(
     const bool skipMessage,
     const std::string& message
 ) {
-    const std::shared_ptr<NetworkPeer>& networkPeer = this->m_Connections.at(networkIdentifier);
+    const std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
 
     DisconnectPacket disconnectPacket;
     disconnectPacket.reason = disconnectReason;
@@ -154,7 +176,7 @@ void ServerNetworkHandler::disconnectClient(
 };
 
 void ServerNetworkHandler::sendPacket(Packet& packet) {
-    for (const auto& subClients: this->m_Players | std::views::values)
+    for (const auto& subClients: this->mPlayers | std::views::values)
         for (const auto& player: subClients | std::views::values)
         {
             player->sendNetworkPacket(packet);
@@ -310,10 +332,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     RequestNetworkSettingsPacket& packet
 ) {
-    if (!this->m_Connections.contains(networkIdentifier))
+    if (!this->mConnections.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<NetworkPeer>& networkPeer = this->m_Connections.at(networkIdentifier);
+    const std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
 
     const bool isOutdated = packet.protocol < SharedConstants::NetworkProtocolVersion;
     if (packet.protocol < SharedConstants::NetworkProtocolVersion
@@ -344,30 +366,27 @@ void ServerNetworkHandler::handle(
         return;
     };
 
-    constexpr auto compressionAlgorithm = CompressionType::Zlib;
-    constexpr uint16_t compressionThreshold = 0x00;
-
     NetworkSettingsPacket networkSettings;
-    networkSettings.compressionThreshold = compressionThreshold;
-    networkSettings.compressionAlgorithm = compressionAlgorithm;
+    networkSettings.compressionThreshold = this->mConnectionDefinition.compressionThreshold;
+    networkSettings.compressionAlgorithm = this->mConnectionDefinition.compressionType;
     networkSettings.clientThrottle = false;
     networkSettings.clientThrottleThreshold = 0;
     networkSettings.clientThrottleScalar = 0.0f;
 
     networkPeer->sendPacket(SubClientId::PrimaryClient, networkSettings);
 
-    networkPeer->m_Compression = compressionAlgorithm;
-    networkPeer->m_CompressionThreshold = compressionThreshold;
+    networkPeer->mCompression = this->mConnectionDefinition.compressionType;
+    networkPeer->mCompressionThreshold = this->mConnectionDefinition.compressionThreshold;
 };
 
 void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     LoginPacket& packet
 ) {
-    if (!this->m_Connections.contains(networkIdentifier) || this->m_Players.contains(networkIdentifier))
+    if (!this->mConnections.contains(networkIdentifier) || this->mPlayers.contains(networkIdentifier))
         return;
 
-    std::shared_ptr<NetworkPeer>& networkPeer = this->m_Connections.at(networkIdentifier);
+    std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
 
     bool isOutdated = packet.protocol < SharedConstants::NetworkProtocolVersion;
     if (packet.protocol < SharedConstants::NetworkProtocolVersion
@@ -399,8 +418,8 @@ void ServerNetworkHandler::handle(
         return;
     };
 
-    const bool useOnlineAuth = this->m_ConnectionDefinition.useOnlineAuthentication;
-    if (useOnlineAuth && packet.chains.size() != 3 || packet.chains.empty())
+    const bool useOnlineAuthentication = this->mRequireOnlineAuthentication;
+    if (useOnlineAuthentication && packet.chains.size() != 3 || packet.chains.empty())
     {
         this->disconnectClient(
             networkIdentifier, SubClientId::PrimaryClient,
@@ -477,7 +496,7 @@ void ServerNetworkHandler::handle(
             disconnectReason, false, disconnectMessage);
     };
 
-    if (true == useOnlineAuth)
+    if (true == useOnlineAuthentication)
     {
         // Checks if there is a player with the same xuid
         /*const auto& identifier = this->getNetworkIdentifier(packet.connectionRequest->getXuid());
@@ -486,7 +505,7 @@ void ServerNetworkHandler::handle(
             this->disconnectClient(
                 networkIdentifier, DisconnectReason::LoggedInOtherLocation,
                 false, "disconnectionScreen.loggedinOtherLocation");
-            this->m_Players.erase(networkIdentifier);
+            this->mPlayers.erase(networkIdentifier);
         };*/
     };
 
@@ -502,12 +521,12 @@ void ServerNetworkHandler::handle(
             packet.connectionRequest->getXuid(), packet.connectionRequest->getPlayFabId());
 
     // Create a new player
-    this->m_Players.insert_or_assign(networkIdentifier, Players{});
-    auto& clients = this->m_Players.at(networkIdentifier);
+    this->mPlayers.insert_or_assign(networkIdentifier, Players{});
+    auto& clients = this->mPlayers.at(networkIdentifier);
 
     clients.emplace(SubClientId::PrimaryClient,
         std::make_shared<Player>(
-            this->m_Level,
+            this->mLevel,
             networkPeer, this,
             packet.connectionRequest, SubClientId::PrimaryClient));
 
@@ -558,14 +577,14 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     SubClientLoginPacket& packet
 ) {
-    if (!this->m_Connections.contains(networkIdentifier))
+    if (!this->mConnections.contains(networkIdentifier))
         return;
 
     const auto subClientId = packet.getSubClientId();
-    std::shared_ptr<NetworkPeer>& networkPeer = this->m_Connections.at(networkIdentifier);
+    std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
 
-    const bool useOnlineAuth = this->m_ConnectionDefinition.useOnlineAuthentication;
-    if (useOnlineAuth && packet.chains.size() != 3 || packet.chains.empty())
+    const bool useOnlineAuthentication = this->mRequireOnlineAuthentication;
+    if (useOnlineAuthentication && packet.chains.size() != 3 || packet.chains.empty())
     {
         this->disconnectClient(
             networkIdentifier, subClientId,
@@ -597,7 +616,7 @@ void ServerNetworkHandler::handle(
         return;
     };
 
-    if (true == useOnlineAuth)
+    if (true == useOnlineAuthentication)
     {
         // Checks if there is a player with the same xuid
         /*const auto& identifier = this->getNetworkIdentifier(packet.connectionRequest->getXuid());
@@ -606,7 +625,7 @@ void ServerNetworkHandler::handle(
             this->disconnectClient(
                 networkIdentifier, DisconnectReason::LoggedInOtherLocation,
                 false, "disconnectionScreen.loggedinOtherLocation");
-            this->m_Players.erase(networkIdentifier);
+            this->mPlayers.erase(networkIdentifier);
         };*/
     };
 
@@ -617,10 +636,10 @@ void ServerNetworkHandler::handle(
     networkPeer->sendPacket(subClientId, playStatus);
 
     // Create a new player
-    auto& clients = this->m_Players.at(networkIdentifier);
+    auto& clients = this->mPlayers.at(networkIdentifier);
     clients.insert_or_assign(subClientId,
         std::make_shared<Player>(
-            this->m_Level,
+            this->mLevel,
             networkPeer, this,
             packet.connectionRequest, subClientId));
 
@@ -653,10 +672,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ClientToServerHandshakePacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -673,10 +692,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ClientCacheStatusPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -687,10 +706,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ResourcePackClientResponsePacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -713,7 +732,7 @@ void ServerNetworkHandler::handle(
             resourcePackStack.baseGameVersion = SharedConstants::CurrentGameVersion.asString();
             resourcePackStack.includeEditorPacks = false;
 
-            const auto& levelSettings = this->m_Level->getLevelSettings();
+            const auto& levelSettings = this->mLevel->getLevelSettings();
             resourcePackStack.experiments.experimentList = levelSettings->getExperiments();
             resourcePackStack.experiments.experimentsEverEnabled = levelSettings->hasHadExperiments();
 
@@ -732,10 +751,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     TextPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -757,10 +776,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     InteractPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -780,10 +799,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ContainerClosePacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -794,10 +813,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     RequestChunkRadiusPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -817,10 +836,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     PlayerSkinPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -851,10 +870,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     CommandRequestPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -865,9 +884,9 @@ void ServerNetworkHandler::handle(
     switch (packet.commandOrigin->getType())
     {
         case CommandOriginType::Player: {
-            const PlayerCommandOrigin playerOrigin{ this->m_ServerInstance, player, packet.commandOrigin };
+            const PlayerCommandOrigin playerOrigin{ this->mServerInstance, player, packet.commandOrigin };
 
-            this->m_ServerInstance->runCommand(packet.command, playerOrigin, commandOutput);
+            this->mServerInstance->runCommand(packet.command, playerOrigin, commandOutput);
 
             {
                 CommandOutputPacket commandOutputPacket;
@@ -888,10 +907,10 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     MovePlayerPacket& packet
 ) {
-    if (!this->m_Players.contains(networkIdentifier))
+    if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->m_Players.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 

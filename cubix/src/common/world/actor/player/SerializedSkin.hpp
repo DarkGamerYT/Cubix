@@ -17,37 +17,37 @@
 using TintColorMap = std::array<Util::Color, 4>;
 class SerializedSkin {
 private:
-    std::string m_id;
-    std::string m_fullId;
-    std::string m_playFabId;
-    std::string m_capeId;
-    Util::Image m_skinImage;
-    Util::Image m_capeImage;
+    std::string mId;
+    std::string mFullId;
+    std::string mPlayFabId;
+    std::string mCapeId;
+    Util::Image mSkinImage;
+    Util::Image mCapeImage;
 
-    rapidjson::Document m_resourcePatch;
-    rapidjson::Document m_geometryData;
-    std::string m_geometryMinEngineVersion;
-    std::string m_animationData;
+    rapidjson::Document mResourcePatch;
+    rapidjson::Document mGeometryData;
+    std::string mGeometryMinEngineVersion;
+    std::string mAnimationData;
 
-    persona::ArmSize m_armSize = persona::ArmSize::Wide;
-    Util::Color m_skinColor;
-    std::unordered_map<persona::PieceType, TintColorMap> m_pieceTintColors;
-    std::vector<persona::AnimatedImageData> m_skinAnimatedImages;
-    std::vector<persona::SerializedPiece> m_personaPieces;
+    persona::ArmSize mArmSize = persona::ArmSize::Wide;
+    Util::Color mSkinColor;
+    std::unordered_map<persona::PieceType, TintColorMap> mPieceTintColors;
+    std::vector<persona::AnimatedImageData> mSkinAnimatedImages;
+    std::vector<persona::SerializedPiece> mPersonaPieces;
 
-    bool m_isTrusted = true;
-    bool m_isPremium = false;
-    bool m_isPersona = false;
-    bool m_isCapeOnClassicSkin = false;
-    bool m_isPrimaryUser = true;
+    bool mIsTrusted = true;
+    bool mIsPremium = false;
+    bool mIsPersona = false;
+    bool mIsCapeOnClassicSkin = false;
+    bool mIsPrimaryUser = true;
     bool m_overridesPlayerAppearance = true;
 
 public:
     SerializedSkin() = default;
-    SerializedSkin(const std::unique_ptr<ConnectionRequest>&);
+    explicit SerializedSkin(const std::unique_ptr<ConnectionRequest>&);
 
-    bool isTrusted() const { return this->m_isTrusted; };
-    bool isPersona() const { return this->m_isPersona; };
+    bool isTrusted() const { return this->mIsTrusted; };
+    bool isPersona() const { return this->mIsPersona; };
 
     void read(BinaryStream&);
     void write(BinaryStream&);

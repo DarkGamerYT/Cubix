@@ -1,5 +1,4 @@
 #include "Level.hpp"
-
 void Level::initialize(const LevelSettings& levelSettings) {
     this->mLevelSettings = std::make_shared<LevelSettings>(levelSettings);
 
@@ -15,4 +14,8 @@ void Level::initialize(const LevelSettings& levelSettings) {
         experiments.emplace("gametest", true);
         this->mLevelSettings->setHasHadExperiments(true);
     };
+};
+
+void Level::tick(const uint32_t tick) {
+    // Logger::log(Logger::LogLevel::Debug, "Current tick: {}", tick);
 };

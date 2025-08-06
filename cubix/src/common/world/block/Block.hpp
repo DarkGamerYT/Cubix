@@ -18,27 +18,29 @@ class Item;
 class Block
 {
 private:
-    std::string m_Identifier;
-    int32_t m_NetId = 0; // Invalid block
-    BlockStates m_States;
-    std::shared_ptr<Item> m_BlockItem;
+    std::string mIdentifier;
+    int32_t mNetId = 0; // Invalid block
+    BlockStates mStates;
+    std::shared_ptr<Item> mBlockItem;
 
 public:
-    Block() : m_Identifier("minecraft:invalid") {};
-    Block(const std::string& identifier) : m_Identifier(identifier), m_NetId(blockNetIdCounter++) {};
-    Block(const std::string& identifier, int id) : m_Identifier(identifier), m_NetId(id) {};
+    Block() : mIdentifier("minecraft:invalid") {};
+    Block(const std::string& identifier, const int id)
+        : mIdentifier(identifier), mNetId(id) {};
+    explicit Block(const std::string& identifier)
+        : mIdentifier(identifier), mNetId(blockNetIdCounter++) {};
 
-    const std::string& getIdentifier() const { return this->m_Identifier; };
-    int32_t getNetworkId() const { return this->m_NetId; };
-    const Item& getBlockItem() const { return *this->m_BlockItem; };
+    const std::string& getIdentifier() const { return this->mIdentifier; };
+    int32_t getNetworkId() const { return this->mNetId; };
+    const Item& getBlockItem() const { return *this->mBlockItem; };
 
-    BlockState& getState(const std::string& key) { return this->m_States[key]; };
-    BlockStates getStates() const { return this->m_States; };
+    BlockState& getState(const std::string& key) { return this->mStates[key]; };
+    BlockStates getStates() const { return this->mStates; };
 
 
     Block& setBlockItem(Item& item);
 
-    void setState(BlockState& state) { this->m_States.emplace(state.identifier(), state); };
+    void setState(BlockState& state) { this->mStates.emplace(state.identifier(), state); };
 
 
     static int32_t hash(const Block&);

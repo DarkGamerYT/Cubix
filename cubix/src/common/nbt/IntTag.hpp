@@ -5,24 +5,25 @@
 
 namespace Nbt
 {
-    class IntTag : public Nbt::Tag
+    class IntTag final : public Nbt::Tag
     {
     private:
-        int m_Value;
+        int mValue;
 
     public:
-        IntTag(int value = 0)
-            : m_Value(value) {};
+        explicit IntTag(const int value = 0)
+            : mValue(value) {};
 
-        void setValue(int value) { this->m_Value = value; };
-        int getValue() const { return this->m_Value; };
+        void setValue(const int value) { this->mValue = value; };
+        int getValue() const { return this->mValue; };
 
         Nbt::TagType getId() const override { return Nbt::TagType::Int; };
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<IntTag>(*this);
         };
+        
         std::string toString() const override {
-            return std::format("TAG_Int: {}", this->m_Value);
+            return std::format("TAG_Int: {}", this->mValue);
         };
     };
 };

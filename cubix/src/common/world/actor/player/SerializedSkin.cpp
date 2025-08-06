@@ -1,39 +1,39 @@
 #include "SerializedSkin.hpp"
 
 SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request) {
-    this->m_playFabId = request->getPlayFabId();
+    this->mPlayFabId = request->getPlayFabId();
 
     const auto& data = request->data();
-    this->m_fullId = Json::getString(data, "SkinId");
-    this->m_capeId = Json::getString(data, "CapeId");
-    this->m_id = m_fullId.substr(0, m_fullId.size() - m_capeId.size());
+    this->mFullId = Json::getString(data, "SkinId");
+    this->mCapeId = Json::getString(data, "CapeId");
+    this->mId = mFullId.substr(0, mFullId.size() - mCapeId.size());
 
     {
         // Skin Image
-        this->m_skinImage.height = Json::getInt(data, "SkinImageHeight");
-        this->m_skinImage.width = Json::getInt(data, "SkinImageWidth");
+        this->mSkinImage.height = Json::getInt(data, "SkinImageHeight");
+        this->mSkinImage.width = Json::getInt(data, "SkinImageWidth");
 
         const auto& decodedSkin = Util::Base64::decode(
             Json::getString(data, "SkinData"));
 
-        this->m_skinImage.data = std::vector<uint8_t>(
+        this->mSkinImage.data = std::vector<uint8_t>(
             decodedSkin.begin(), decodedSkin.end());
     };
 
     {
         // Cape Image
-        this->m_capeImage.height = Json::getInt(data, "CapeImageHeight");
-        this->m_capeImage.width = Json::getInt(data, "CapeImageWidth");
+        this->mCapeImage.height = Json::getInt(data, "CapeImageHeight");
+        this->mCapeImage.width = Json::getInt(data, "CapeImageWidth");
 
         const auto& decodedCape = Util::Base64::decode(
             Json::getString(data, "CapeData"));
 
-        this->m_capeImage.data = std::vector<uint8_t>(
+        this->mCapeImage.data = std::vector<uint8_t>(
             decodedCape.begin(), decodedCape.end());
     };
 
-    this->m_armSize = persona::getArmSize(Json::getString(data, "ArmSize"));
-    this->m_skinColor = Util::Color::fromHexString(Json::getString(data, "SkinColor"));
+    this->mArmSize = persona::getArmSize(Json::getString(data, "ArmSize"));
+    this->mSkinColor = Util::Color::fromHexString(Json::getString(data, "SkinColor"));
 
     {
         const auto& tintColors = Json::getArray(data, "PieceTintColors");
@@ -54,7 +54,7 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
             };
 
             const auto& pieceType = Json::getString(tintColor, "PieceType");
-            this->m_pieceTintColors.emplace(
+            this->mPieceTintColors.emplace(
                 persona::getPieceType(pieceType), colorMap);
         };
     };
@@ -81,18 +81,18 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
             const auto& type = Json::getInt(animatedImage, "Type");
             const auto& expression = Json::getInt(animatedImage, "AnimationExpression");
             const auto& frames = Json::getFloat(animatedImage, "Frames");
-            this->m_skinAnimatedImages.emplace_back(
+            this->mSkinAnimatedImages.emplace_back(
                 static_cast<persona::AnimatedTextureType>(type),
                 static_cast<persona::AnimationExpression>(expression),
                 image, frames);
         };
     };
 
-    this->m_isTrusted = Json::getBoolean(data, "TrustedSkin");
-    this->m_isPremium = Json::getBoolean(data, "PremiumSkin");
-    this->m_isPersona = Json::getBoolean(data, "PersonaSkin");
-    this->m_isCapeOnClassicSkin = Json::getBoolean(data, "CapeOnClassicSkin");
-    //this->m_isPrimaryUser = true;
+    this->mIsTrusted = Json::getBoolean(data, "TrustedSkin");
+    this->mIsPremium = Json::getBoolean(data, "PremiumSkin");
+    this->mIsPersona = Json::getBoolean(data, "PersonaSkin");
+    this->mIsCapeOnClassicSkin = Json::getBoolean(data, "CapeOnClassicSkin");
+    //this->mIsPrimaryUser = true;
     try {
         this->m_overridesPlayerAppearance = Json::getBoolean(data, "OverrideSkin");
     }
@@ -103,18 +103,18 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
 };
 
 void SerializedSkin::read(BinaryStream& stream) {
-    this->m_id = stream.readString<Endianness::NetworkEndian>();
-    this->m_playFabId = stream.readString<Endianness::NetworkEndian>();
-    this->m_resourcePatch.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
-    if (this->m_resourcePatch.HasParseError())
+    this->mId = stream.readString<Endianness::NetworkEndian>();
+    this->mPlayFabId = stream.readString<Endianness::NetworkEndian>();
+    this->mResourcePatch.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
+    if (this->mResourcePatch.HasParseError())
         throw std::exception("Invalid resource patch");
 
     {
-        this->m_skinImage.width = stream.readUnsignedInt();
-        this->m_skinImage.height = stream.readUnsignedInt();
+        this->mSkinImage.width = stream.readUnsignedInt();
+        this->mSkinImage.height = stream.readUnsignedInt();
 
         const auto& skinImage = stream.readString<Endianness::NetworkEndian>();
-        this->m_skinImage.data = std::vector<uint8_t>(skinImage.begin(), skinImage.end());
+        this->mSkinImage.data = std::vector<uint8_t>(skinImage.begin(), skinImage.end());
     };
 
     const uint32_t animatedImages = stream.readUnsignedInt();
@@ -132,30 +132,30 @@ void SerializedSkin::read(BinaryStream& stream) {
         const auto& type = stream.readUnsignedInt();
         const auto& frames = static_cast<float>(stream.readUnsignedInt());
         const auto& expression = stream.readUnsignedInt();
-        this->m_skinAnimatedImages.emplace_back(
+        this->mSkinAnimatedImages.emplace_back(
             static_cast<persona::AnimatedTextureType>(type),
             static_cast<persona::AnimationExpression>(expression),
             image, frames);
     };
 
     {
-        this->m_capeImage.width = stream.readUnsignedInt();
-        this->m_capeImage.height = stream.readUnsignedInt();
+        this->mCapeImage.width = stream.readUnsignedInt();
+        this->mCapeImage.height = stream.readUnsignedInt();
 
         const auto& capeImage = stream.readString<Endianness::NetworkEndian>();
-        this->m_capeImage.data = std::vector<uint8_t>(capeImage.begin(), capeImage.end());
+        this->mCapeImage.data = std::vector<uint8_t>(capeImage.begin(), capeImage.end());
     };
 
-    this->m_geometryData.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
-    if (this->m_geometryData.HasParseError())
+    this->mGeometryData.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
+    if (this->mGeometryData.HasParseError())
         throw std::exception("Invalid geometry data");
 
-    this->m_geometryMinEngineVersion = stream.readString<Endianness::NetworkEndian>();
-    this->m_animationData = stream.readString<Endianness::NetworkEndian>();
-    this->m_capeId = stream.readString<Endianness::NetworkEndian>();
-    this->m_fullId = stream.readString<Endianness::NetworkEndian>();
-    this->m_armSize = persona::getArmSize(stream.readString<Endianness::NetworkEndian>());
-    this->m_skinColor = Util::Color::fromHexString(stream.readString<Endianness::NetworkEndian>());
+    this->mGeometryMinEngineVersion = stream.readString<Endianness::NetworkEndian>();
+    this->mAnimationData = stream.readString<Endianness::NetworkEndian>();
+    this->mCapeId = stream.readString<Endianness::NetworkEndian>();
+    this->mFullId = stream.readString<Endianness::NetworkEndian>();
+    this->mArmSize = persona::getArmSize(stream.readString<Endianness::NetworkEndian>());
+    this->mSkinColor = Util::Color::fromHexString(stream.readString<Endianness::NetworkEndian>());
 
     const uint32_t piecesSize = stream.readUnsignedInt();
     for (uint32_t i = 0; i < piecesSize; i++)
@@ -166,7 +166,7 @@ void SerializedSkin::read(BinaryStream& stream) {
         const auto& isDefault = stream.readBoolean();
         const auto& productId = stream.readString<Endianness::NetworkEndian>();
 
-        this->m_personaPieces.emplace_back(
+        this->mPersonaPieces.emplace_back(
             pieceId,
             persona::getPieceType(pieceType),
             Util::UUID::fromString(packId),
@@ -183,33 +183,33 @@ void SerializedSkin::read(BinaryStream& stream) {
         for (uint32_t j = 0; j < colorsSize; j++)
             colorMap[j] = Util::Color::fromHexString(stream.readString<Endianness::NetworkEndian>());
 
-        this->m_pieceTintColors.emplace(
+        this->mPieceTintColors.emplace(
             persona::getPieceType(pieceType), colorMap);
     };
 
-    this->m_isPremium = stream.readBoolean();
-    this->m_isPersona = stream.readBoolean();
-    this->m_isCapeOnClassicSkin = stream.readBoolean();
-    this->m_isPrimaryUser = stream.readBoolean();
+    this->mIsPremium = stream.readBoolean();
+    this->mIsPersona = stream.readBoolean();
+    this->mIsCapeOnClassicSkin = stream.readBoolean();
+    this->mIsPrimaryUser = stream.readBoolean();
     this->m_overridesPlayerAppearance = stream.readBoolean();
 };
 
 void SerializedSkin::write(BinaryStream& stream) {
-    stream.writeString<Endianness::NetworkEndian>(this->m_id);
-    stream.writeString<Endianness::NetworkEndian>(this->m_playFabId);
-    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->m_resourcePatch));
+    stream.writeString<Endianness::NetworkEndian>(this->mId);
+    stream.writeString<Endianness::NetworkEndian>(this->mPlayFabId);
+    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->mResourcePatch));
 
     {
-        stream.writeUnsignedInt(this->m_skinImage.width);
-        stream.writeUnsignedInt(this->m_skinImage.height);
+        stream.writeUnsignedInt(this->mSkinImage.width);
+        stream.writeUnsignedInt(this->mSkinImage.height);
 
-        const auto& data = this->m_skinImage.data;
+        const auto& data = this->mSkinImage.data;
         stream.writeString<Endianness::NetworkEndian>(
             std::string(data.begin(), data.end()));
     };
 
-    stream.writeUnsignedInt(static_cast<uint32_t>(this->m_skinAnimatedImages.size()));
-    for (const auto& animatedImage : this->m_skinAnimatedImages)
+    stream.writeUnsignedInt(static_cast<uint32_t>(this->mSkinAnimatedImages.size()));
+    for (const auto& animatedImage : this->mSkinAnimatedImages)
     {
         stream.writeUnsignedInt(animatedImage.image.width);
         stream.writeUnsignedInt(animatedImage.image.height);
@@ -224,24 +224,24 @@ void SerializedSkin::write(BinaryStream& stream) {
     };
 
     {
-        stream.writeUnsignedInt(this->m_capeImage.width);
-        stream.writeUnsignedInt(this->m_capeImage.height);
+        stream.writeUnsignedInt(this->mCapeImage.width);
+        stream.writeUnsignedInt(this->mCapeImage.height);
 
-        const auto& data = this->m_capeImage.data;
+        const auto& data = this->mCapeImage.data;
         stream.writeString<Endianness::NetworkEndian>(
             std::string(data.begin(), data.end()));
     };
 
-    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->m_geometryData));
-    stream.writeString<Endianness::NetworkEndian>(this->m_geometryMinEngineVersion);
-    stream.writeString<Endianness::NetworkEndian>(this->m_animationData);
-    stream.writeString<Endianness::NetworkEndian>(this->m_capeId);
-    stream.writeString<Endianness::NetworkEndian>(this->m_fullId);
-    stream.writeString<Endianness::NetworkEndian>(persona::getArmSize(this->m_armSize));
-    stream.writeString<Endianness::NetworkEndian>(this->m_skinColor.toHexString());
+    stream.writeString<Endianness::NetworkEndian>(Json::toString(this->mGeometryData));
+    stream.writeString<Endianness::NetworkEndian>(this->mGeometryMinEngineVersion);
+    stream.writeString<Endianness::NetworkEndian>(this->mAnimationData);
+    stream.writeString<Endianness::NetworkEndian>(this->mCapeId);
+    stream.writeString<Endianness::NetworkEndian>(this->mFullId);
+    stream.writeString<Endianness::NetworkEndian>(persona::getArmSize(this->mArmSize));
+    stream.writeString<Endianness::NetworkEndian>(this->mSkinColor.toHexString());
 
-    stream.writeUnsignedInt(static_cast<uint32_t>(this->m_personaPieces.size()));
-    for (const auto& personaPiece : this->m_personaPieces)
+    stream.writeUnsignedInt(static_cast<uint32_t>(this->mPersonaPieces.size()));
+    for (const auto& personaPiece : this->mPersonaPieces)
     {
         stream.writeString<Endianness::NetworkEndian>(personaPiece.pieceId);
         stream.writeString<Endianness::NetworkEndian>(persona::getPieceType(personaPiece.pieceType));
@@ -250,8 +250,8 @@ void SerializedSkin::write(BinaryStream& stream) {
         stream.writeString<Endianness::NetworkEndian>(personaPiece.productId);
     };
 
-    stream.writeUnsignedInt(static_cast<uint32_t>(this->m_pieceTintColors.size()));
-    for (const auto& tintColor : this->m_pieceTintColors)
+    stream.writeUnsignedInt(static_cast<uint32_t>(this->mPieceTintColors.size()));
+    for (const auto& tintColor : this->mPieceTintColors)
     {
         stream.writeString<Endianness::NetworkEndian>(persona::getPieceType(tintColor.first));
 
@@ -262,9 +262,9 @@ void SerializedSkin::write(BinaryStream& stream) {
             stream.writeString<Endianness::NetworkEndian>(colorMap[i].toHexString());
     };
 
-    stream.writeBoolean(this->m_isPremium);
-    stream.writeBoolean(this->m_isPersona);
-    stream.writeBoolean(this->m_isCapeOnClassicSkin);
-    stream.writeBoolean(this->m_isPrimaryUser);
+    stream.writeBoolean(this->mIsPremium);
+    stream.writeBoolean(this->mIsPersona);
+    stream.writeBoolean(this->mIsCapeOnClassicSkin);
+    stream.writeBoolean(this->mIsPrimaryUser);
     stream.writeBoolean(this->m_overridesPlayerAppearance);
 };

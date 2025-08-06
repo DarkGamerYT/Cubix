@@ -6,17 +6,17 @@
 
 Block& Block::setBlockItem(Item& item)
 {
-    this->m_BlockItem = std::make_shared<Item>(item);
+    this->mBlockItem = std::make_shared<Item>(item);
     return *this;
 };
 
 std::unique_ptr<Nbt::CompoundTag> Block::serialise() const
 {
     Nbt::CompoundTag root;
-    root.add("name", Nbt::StringTag(this->m_Identifier));
+    root.add("name", Nbt::StringTag(this->mIdentifier));
 
     Nbt::CompoundTag states;
-    for (const auto& [key, state] : this->m_States)
+    for (const auto& [key, state] : this->mStates)
     {
         if (const int type = state.type(); type == 0)
         {
@@ -48,7 +48,7 @@ int32_t Block::hash(const Block& block)
     Nbt::write(stream, root->copy());
 
     const std::vector<uint8_t>& data = stream.mStream;
-    int32_t hash = 0x811C9DC5;
+    auto hash = static_cast<int32_t>(0x811C9DC5);
     for (const uint8_t byte : data)
     {
         hash ^= byte & 0xff;

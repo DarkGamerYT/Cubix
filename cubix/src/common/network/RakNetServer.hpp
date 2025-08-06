@@ -11,15 +11,15 @@
 #include "NetworkServer.hpp"
 #include "NetworkIdentifier.hpp"
 
-class RakNetServer : public NetworkServer
+class RakNetServer final : public NetworkServer
 {
 private:
-    std::mutex m_peerMutex;
+    std::mutex mPeerMutex;
 
 public:
-    RakNet::RakPeerInterface* m_pPeerInterface;
-    RakNet::RakNetGUID m_Guid;
-    RakNet::SocketDescriptor m_SocketDescriptor[2];
+    RakNet::RakPeerInterface* p_mPeerInterface;
+    RakNet::RakNetGUID mGuid;
+    RakNet::SocketDescriptor mSocketDescriptor[2];
 
 public:
     explicit RakNetServer(ServerNetworkHandler*);

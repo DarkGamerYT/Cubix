@@ -6,7 +6,7 @@
 class GameRulesChangedPacket final : public Packet
 {
 public:
-    std::vector<GameRule> rules;
+    std::vector<std::shared_ptr<IGameRule>> rules;
 
 public:
     GameRulesChangedPacket()

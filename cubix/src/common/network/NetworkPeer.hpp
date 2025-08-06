@@ -27,17 +27,17 @@ public:
     };
 
 protected:
-    NetworkIdentifier m_NetworkIdentifier;
-    NetworkServer* m_NetworkServer;
+    NetworkIdentifier mNetworkIdentifier;
+    NetworkServer* mNetworkServer;
 
 public:
-    CompressionType m_Compression = CompressionType::Disabled;
-    uint16_t m_CompressionThreshold = 0;
+    CompressionType mCompression = CompressionType::Disabled;
+    uint16_t mCompressionThreshold = 0;
 
 public:
-    NetworkPeer() {};
+    NetworkPeer() = default;
     NetworkPeer(const NetworkIdentifier& networkIdentifier, NetworkServer* serverLocator)
-        : m_NetworkIdentifier(networkIdentifier), m_NetworkServer(serverLocator) {};
+        : mNetworkIdentifier(networkIdentifier), mNetworkServer(serverLocator) {};
 
     BinaryStream& receivePacket(BinaryStream&) const;
 
@@ -72,9 +72,9 @@ public:
         this->sendStream(dataStream, Reliability::ReliableOrdered);
     };
 
-    NetworkServer* getNetworkServer() const { return this->m_NetworkServer; };
-    const NetworkIdentifier& getNetworkIdentifier() const { return this->m_NetworkIdentifier; };
-    bool isCompressed() const { return this->m_Compression != CompressionType::Disabled; };
+    NetworkServer* getNetworkServer() const { return this->mNetworkServer; };
+    const NetworkIdentifier& getNetworkIdentifier() const { return this->mNetworkIdentifier; };
+    bool isCompressed() const { return this->mCompression != CompressionType::Disabled; };
 
 private:
     void sendStream(const BinaryStream&, NetworkPeer::Reliability = Reliability::ReliableOrdered) const;

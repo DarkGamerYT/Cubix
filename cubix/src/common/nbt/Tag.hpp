@@ -38,7 +38,7 @@ namespace Nbt
     };
 
     // End Tag
-    class EndTag : public Nbt::Tag
+    class EndTag final : public Nbt::Tag
     {
     public:
         EndTag() {};

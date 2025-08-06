@@ -2,27 +2,27 @@
 #include "ServerNetworkHandler.hpp"
 RakNetServer::RakNetServer(ServerNetworkHandler* networkHandler)
 {
-    this->m_pPeerInterface = RakNet::RakPeerInterface::GetInstance();
-    this->m_Guid = this->m_pPeerInterface->GetMyGUID();
+    this->p_mPeerInterface = RakNet::RakPeerInterface::GetInstance();
+    this->mGuid = this->p_mPeerInterface->GetMyGUID();
 
-    this->m_Network = networkHandler;
-    this->m_Identifier = NetworkIdentifier(this->m_Guid);
+    this->mNetwork = networkHandler;
+    this->mIdentifier = NetworkIdentifier(this->mGuid);
 };
 
 void RakNetServer::startServer(PortPair ports, int maxPlayers)
 {
     constexpr int socketCount = RAKNET_SUPPORT_IPV6 ? 2 : 1;
-    this->m_SocketDescriptor[0].socketFamily = AF_INET;
-    this->m_SocketDescriptor[0].port = ports.mPortV4;
+    this->mSocketDescriptor[0].socketFamily = AF_INET;
+    this->mSocketDescriptor[0].port = ports.mPortV4;
 #if RAKNET_SUPPORT_IPV6
-    this->m_SocketDescriptor[1].socketFamily = AF_INET6;
-    this->m_SocketDescriptor[1].port = ports.mPortV6;
+    this->mSocketDescriptor[1].socketFamily = AF_INET6;
+    this->mSocketDescriptor[1].port = ports.mPortV6;
 #endif
 
-    switch (this->m_pPeerInterface->Startup(maxPlayers, this->m_SocketDescriptor, socketCount))
+    switch (this->p_mPeerInterface->Startup(maxPlayers, this->mSocketDescriptor, socketCount))
     {
         case RakNet::RAKNET_STARTED: {
-            this->m_pPeerInterface->SetMaximumIncomingConnections(maxPlayers);
+            this->p_mPeerInterface->SetMaximumIncomingConnections(maxPlayers);
 
             Logger::log(Logger::LogLevel::Info,
                 "IPv4 supported, port: {}: Used for gameplay {}",
@@ -37,13 +37,13 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
             // Server announcement
             std::thread([](const RakNetServer* pServerLocator) {
                 while (
-                    pServerLocator->m_pPeerInterface != nullptr
-                    && pServerLocator->m_pPeerInterface->IsActive()
+                    pServerLocator->p_mPeerInterface != nullptr
+                    && pServerLocator->p_mPeerInterface->IsActive()
                 ) {
-                    const std::string& message = pServerLocator->m_UnconnectedPong;
+                    const std::string& message = pServerLocator->mUnconnectedPong;
                     if (!message.empty())
                     {
-                        pServerLocator->m_pPeerInterface->SetOfflinePingResponse(message.c_str(), message.size());
+                        pServerLocator->p_mPeerInterface->SetOfflinePingResponse(message.c_str(), message.size());
                     };
 
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -59,7 +59,7 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
                 "Port [{}] may be in use by another process. Free up the port or use alternate ports for server", ports.mPortV6);
         #endif
 
-            this->m_Network->shutdown();
+            this->mNetwork->shutdown();
             break;
         };
         default: {
@@ -70,19 +70,19 @@ void RakNetServer::startServer(PortPair ports, int maxPlayers)
 
 void RakNetServer::stopServer()
 {
-    std::lock_guard<std::mutex> lock(this->m_peerMutex);
-    if (this->m_pPeerInterface != nullptr)
+    std::lock_guard<std::mutex> lock(this->mPeerMutex);
+    if (this->p_mPeerInterface != nullptr)
     {
         {
             // Drain packets
             RakNet::Packet* packet = nullptr;
-            while ((packet = this->m_pPeerInterface->Receive()) != nullptr)
-                this->m_pPeerInterface->DeallocatePacket(packet);
+            while ((packet = this->p_mPeerInterface->Receive()) != nullptr)
+                this->p_mPeerInterface->DeallocatePacket(packet);
         };
 
-        this->m_pPeerInterface->Shutdown(1);
-        RakNet::RakPeerInterface::DestroyInstance(this->m_pPeerInterface);
-        this->m_pPeerInterface = nullptr;
+        this->p_mPeerInterface->Shutdown(1);
+        RakNet::RakPeerInterface::DestroyInstance(this->p_mPeerInterface);
+        this->p_mPeerInterface = nullptr;
     };
 };
 
@@ -93,20 +93,20 @@ void RakNetServer::disconnectClient(
     const bool skipMessage,
     const std::string& message
 ) {
-    this->m_Network->disconnectClient(
+    this->mNetwork->disconnectClient(
         networkIdentifier, subClientId,
         disconnectReason, skipMessage, message);
-    this->m_pPeerInterface->CloseConnection(networkIdentifier.m_Guid, true);
+    this->p_mPeerInterface->CloseConnection(networkIdentifier.mGuid, true);
 };
 
 void RakNetServer::update()
 {
-    std::lock_guard<std::mutex> lock(this->m_peerMutex);
-    if (this->m_pPeerInterface == nullptr)
+    std::lock_guard<std::mutex> lock(this->mPeerMutex);
+    if (this->p_mPeerInterface == nullptr)
         return;
 
     RakNet::Packet* packet = nullptr;
-    while ((packet = this->m_pPeerInterface->Receive()) != nullptr)
+    while ((packet = this->p_mPeerInterface->Receive()) != nullptr)
     {
         const uint8_t packetId = packet->data[0];
         NetworkIdentifier networkIdentifier(packet->guid);
@@ -115,14 +115,19 @@ void RakNetServer::update()
             // Minecraft Packets
             case 0xFE:
             {
-                if (this->m_pPeerInterface->GetConnectionState(networkIdentifier.m_Guid) != RakNet::ConnectionState::IS_CONNECTED)
+                if (this->p_mPeerInterface->GetConnectionState(networkIdentifier.mGuid) != RakNet::ConnectionState::IS_CONNECTED)
                     return;
 
-                const auto& connections = this->m_Network->getConnections();
-                if (!connections.contains(networkIdentifier))
+                const auto& connections = this->mNetwork->getConnections();
+                auto it = std::ranges::find_if(connections, [networkIdentifier](const auto& identifier) {
+                    return identifier->getNetworkIdentifier() == networkIdentifier;
+                });
+
+                if (it == connections.end())
                     continue;
 
-                const std::shared_ptr<NetworkPeer>& networkPeer = connections.at(networkIdentifier);
+                const size_t index = std::distance(connections.begin(), it);
+                const std::shared_ptr<NetworkPeer>& networkPeer = connections.at(index);
 
                 std::vector bitStream(packet->data, packet->data + packet->length);
                 bitStream.erase(bitStream.begin());
@@ -151,7 +156,7 @@ void RakNetServer::update()
                         std::vector payload(buffer, buffer + payloadSize);
 
                         BinaryStream packetStream(payload);
-                        this->m_Network->handle(networkIdentifier, packetStream);
+                        this->mNetwork->handle(networkIdentifier, packetStream);
                     }
                     catch (...)
                     {
@@ -164,10 +169,10 @@ void RakNetServer::update()
 
             case ID_NEW_INCOMING_CONNECTION:
             {
-                this->m_Network->onConnect(networkIdentifier);
+                this->mNetwork->onConnect(networkIdentifier);
 
                 Logger::log(Logger::LogLevel::Debug,
-                    "Incoming connection. ServerID: raknet:{}, ClientID: raknet:{}", this->m_Guid.g, packet->guid.g);
+                    "Incoming connection. ServerID: raknet:{}, ClientID: raknet:{}", this->mGuid.g, packet->guid.g);
                 break;
             };
 
@@ -175,7 +180,7 @@ void RakNetServer::update()
             case ID_CONNECTION_ATTEMPT_FAILED:
             case ID_DISCONNECTION_NOTIFICATION:
             {
-                this->m_Network->onDisconnect(networkIdentifier);
+                this->mNetwork->onDisconnect(networkIdentifier);
                 break;
             };
 
@@ -205,18 +210,18 @@ void RakNetServer::update()
                 RakNet::BitStream response;
                 response.Write(static_cast<RakNet::MessageID>(ID_UNCONNECTED_PONG));
                 response.Write(sendPingTime);
-                response.Write(this->m_Guid.g); // Server GUID
+                response.Write(this->mGuid.g); // Server GUID
                 response.WriteAlignedBytes(MAGIC, sizeof(MAGIC));
 
                 // MOTD and server data (Bedrock LAN format)
-                const std::string& message = this->m_UnconnectedPong;
+                const std::string& message = this->mUnconnectedPong;
                 if (message.empty())
                     continue;
 
                 response.Write(message.c_str(), message.size());
 
                 // Send back
-                this->m_pPeerInterface->Send(
+                this->p_mPeerInterface->Send(
                     &response,
                     IMMEDIATE_PRIORITY, UNRELIABLE_SEQUENCED,
                     0, packet->systemAddress, false
@@ -229,15 +234,15 @@ void RakNetServer::update()
                 break;
         };
 
-        this->m_pPeerInterface->DeallocatePacket(packet);
+        this->p_mPeerInterface->DeallocatePacket(packet);
     };
 };
 
 void RakNetServer::sendPacket(BinaryStream& stream, const NetworkPeer::Reliability reliability)
 {
-    for (const auto &identifier: this->m_Network->getPlayers() | std::views::keys)
+    for (const auto &networkPeer: this->mNetwork->getConnections())
     {
-        this->sendPacket(identifier, stream, reliability);
+        this->sendPacket(networkPeer->getNetworkIdentifier(), stream, reliability);
     };
 };
 void RakNetServer::sendPacket(const NetworkIdentifier& identifier, BinaryStream& stream, NetworkPeer::Reliability reliability)
@@ -246,14 +251,14 @@ void RakNetServer::sendPacket(const NetworkIdentifier& identifier, BinaryStream&
     bitStream.Reset();
     bitStream.WriteAlignedBytes(stream.data(), stream.size());
 
-    RakNet::RakPeerInterface* peerInterface = this->m_pPeerInterface;
+    RakNet::RakPeerInterface* peerInterface = this->p_mPeerInterface;
     if (peerInterface == nullptr
-        || peerInterface->GetConnectionState(identifier.m_Guid) != RakNet::ConnectionState::IS_CONNECTED)
+        || peerInterface->GetConnectionState(identifier.mGuid) != RakNet::ConnectionState::IS_CONNECTED)
         return;
 
     peerInterface->Send(
         &bitStream,
         PacketPriority::HIGH_PRIORITY, static_cast<PacketReliability>(reliability),
-        0, identifier.m_Guid, false
+        0, identifier.mGuid, false
     );
 };

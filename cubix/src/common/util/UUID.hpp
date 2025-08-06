@@ -11,14 +11,14 @@ namespace Util
     class UUID
     {
     private:
-        uint64_t m_MostSignificantBits, m_LeastSignificantBits;
+        uint64_t mMostSignificantBits, mLeastSignificantBits;
 
     public:
-        UUID(uint64_t mostSignificantBits = 0, uint64_t leastSignificantBits = 0)
-            : m_MostSignificantBits(mostSignificantBits), m_LeastSignificantBits(leastSignificantBits) {};
+        explicit UUID(const uint64_t mostSignificantBits = 0, const uint64_t leastSignificantBits = 0)
+            : mMostSignificantBits(mostSignificantBits), mLeastSignificantBits(leastSignificantBits) {};
 
-        uint64_t getMostSignificantBits() const { return this->m_MostSignificantBits; };
-        uint64_t getLeastSignificantBits() const { return this->m_MostSignificantBits; };
+        uint64_t getMostSignificantBits() const { return this->mMostSignificantBits; };
+        uint64_t getLeastSignificantBits() const { return this->mMostSignificantBits; };
 
         std::string toString() const;
         static bool canParse(const std::string&);

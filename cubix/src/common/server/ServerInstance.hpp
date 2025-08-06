@@ -16,6 +16,7 @@
 #include "../network/ServerNetworkHandler.hpp"
 
 #include "PlayerTickPolicy.hpp"
+#include "ServerLevel.hpp"
 #include "commands/CommandOutput.hpp"
 
 class ServerInstance
@@ -27,32 +28,37 @@ public:
         NotStarted = 2
     };
 
-    std::shared_ptr<ServerNetworkHandler> m_Network;
+    std::shared_ptr<ServerNetworkHandler> mNetwork;
 
 private:
-    int m_TicksPerSecond = 20;
-    uint32_t m_CurrentTick = 0;
-    PlayerTickPolicy m_PlayerTickPolicy = PlayerTickPolicy::THROTTLED;
-    std::atomic<InstanceState> m_InstanceState = InstanceState::NotStarted;
-    std::thread m_ServerThread;
-    std::shared_ptr<Level> m_Level;
+    int mTicksPerSecond = 20;
+    uint32_t mCurrentTick = 0;
+    PlayerTickPolicy mPlayerTickPolicy = PlayerTickPolicy::THROTTLED;
+    std::atomic<InstanceState> mInstanceState = InstanceState::NotStarted;
+    std::thread mServerThread;
+    std::shared_ptr<ServerLevel> mLevel;
 
 public:
     ServerInstance();
     ~ServerInstance();
 
-    void initializeServer(const LevelSettings&, PlayerTickPolicy, const ConnectionDefinition&);
+    void initializeServer(
+        const LevelSettings&,
+        PlayerTickPolicy,
+        const ConnectionDefinition&,
+        bool requireOnlineAuthentication,
+        TransportLayer transportLayer);
     void initializeCommands();
     void startServerThread();
     void shutdown();
 
-    int getCurrentTick() const { return this->m_CurrentTick; };
-    InstanceState getInstanceState() const { return this->m_InstanceState.load(); };
+    int getCurrentTick() const { return this->mCurrentTick; };
+    InstanceState getInstanceState() const { return this->mInstanceState.load(); };
     void waitUntil(const InstanceState desired) const {
-        InstanceState current = this->m_InstanceState.load();
+        InstanceState current = this->mInstanceState.load();
         while (current != desired) {
-            this->m_InstanceState.wait(current);
-            current = this->m_InstanceState.load();
+            this->mInstanceState.wait(current);
+            current = this->mInstanceState.load();
         };
     };
 

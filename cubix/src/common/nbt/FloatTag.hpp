@@ -5,24 +5,25 @@
 
 namespace Nbt
 {
-    class FloatTag : public Nbt::Tag
+    class FloatTag final : public Nbt::Tag
     {
     private:
-        float m_Value;
+        float mValue;
 
     public:
-        FloatTag(float value = 0)
-            : m_Value(value) {};
+        explicit FloatTag(const float value = 0)
+            : mValue(value) {};
 
-        void setValue(float value) { this->m_Value = value; };
-        float getValue() const { return this->m_Value; };
+        void setValue(const float value) { this->mValue = value; };
+        float getValue() const { return this->mValue; };
 
         Nbt::TagType getId() const override { return Nbt::TagType::Float; };
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<FloatTag>(*this);
         };
+
         std::string toString() const override {
-            return std::format("TAG_Float: {}", this->m_Value);
+            return std::format("TAG_Float: {}", this->mValue);
         };
     };
 };

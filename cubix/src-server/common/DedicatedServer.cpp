@@ -39,7 +39,7 @@ void DedicatedServer::start()
     Logger::log(Logger::LogLevel::Info, "Configuration: {}", BUILD_TYPE);
 
 
-    const PropertiesSettings propertiesSettings{"server.properties"};
+    const PropertiesSettings propertiesSettings{ "server.properties" };
     if (!propertiesSettings.isPropertiesFileLoaded())
     {
         Logger::log(Logger::LogLevel::Error,
@@ -73,19 +73,25 @@ void DedicatedServer::start()
     levelSettings.setSeed(levelSeed);
     levelSettings.setGameType(gameMode);
     levelSettings.setDifficulty(difficulty);
+    levelSettings.setDefaultPermissionLevel(propertiesSettings.getDefaultPermissionLevel());
 
 
-    const unsigned short portV4 = propertiesSettings.getServerPort();
-    const unsigned short portV6 = propertiesSettings.getServerPortV6();
+    ConnectionDefinition connectionDefinition;
+    connectionDefinition.serverName = propertiesSettings.getServerName();
+    connectionDefinition.maxPlayers = propertiesSettings.getMaxPlayers();
+    connectionDefinition.serverPorts = { propertiesSettings.getServerPort(), propertiesSettings.getServerPortV6() };
+    connectionDefinition.isServerVisibleToLanDiscovery = propertiesSettings.isServerVisibleToLanDiscovery();
+
+    connectionDefinition.compressionType = propertiesSettings.getCompressionAlgorithm();
+    connectionDefinition.compressionThreshold = propertiesSettings.getCompressionThreshold();
 
     // Start server
-    m_ServerInstance.initializeServer(levelSettings, propertiesSettings.getPlayerTickPolicy(), {
-        propertiesSettings.getServerName(),
-        propertiesSettings.getMaxPlayers(),
-        { portV4, portV6 },
-        propertiesSettings.isServerVisibleToLanDiscovery(),
+    mServerInstance.initializeServer(
+        levelSettings,
+        propertiesSettings.getPlayerTickPolicy(),
+        connectionDefinition,
         propertiesSettings.useOnlineAuthentication(),
-    });
+        propertiesSettings.getTransportLayer());
 
     std::thread([](ServerInstance* instance) {
         std::string input;
@@ -105,13 +111,13 @@ void DedicatedServer::start()
                 commandMessage.isSuccessful ? Logger::LogLevel::Info : Logger::LogLevel::Error,
                 "{}", commandMessage.message);
         };
-    }, &m_ServerInstance).detach();
+    }, &mServerInstance).detach();
 
-    m_ServerInstance.waitUntil(ServerInstance::InstanceState::Stopped);
+    mServerInstance.waitUntil(ServerInstance::InstanceState::Stopped);
 };
 
 void DedicatedServer::shutdown()
 {
-    m_ServerInstance.shutdown();
+    mServerInstance.shutdown();
     Logger::shutdown();
 };

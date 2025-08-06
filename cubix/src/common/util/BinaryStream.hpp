@@ -24,6 +24,18 @@ public:
     std::vector<uint8_t> mStream;
     size_t mReadPos = 0;
 
+    template <typename T>
+    struct serialize {
+        static T read(BinaryStream& stream) {
+            static_assert(sizeof(T) == -1, "BinaryStream::serialize<T> not implemented for this type");
+            return nullptr;
+        };
+
+        static void write(const T& value, BinaryStream& stream) {
+            static_assert(sizeof(T) == -1, "BinaryStream::serialize<T> not implemented for this type");
+        };
+    };
+
 public:
     BinaryStream() = default;
     explicit BinaryStream(const std::vector<uint8_t>& data)
@@ -190,7 +202,7 @@ public:
         uint64_t mostSignificantBits = this->readUnsignedLong();
         uint64_t leastSignificantBits = this->readUnsignedLong();
 
-        return { mostSignificantBits, leastSignificantBits };
+        return Util::UUID{ mostSignificantBits, leastSignificantBits };
     };
 
     bool readBoolean() { return this->readByte() != 0; };
@@ -399,7 +411,7 @@ public:
         this->writeUnsignedLong(value.getLeastSignificantBits());
     };
 
-    void writeItem(const Item& item, bool includeNetId = false);
+    void writeItem(const std::shared_ptr<Item>& item, bool includeNetId = false);
 
     std::string toString() const
     {

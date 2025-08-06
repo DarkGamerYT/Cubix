@@ -9,16 +9,16 @@
 class SubChunk
 {
 public:
-    int8_t m_index;
-    std::vector<BlockStorage> m_layers;
+    int8_t mIndex;
+    std::vector<BlockStorage> mLayers;
 
 public:
     SubChunk();
 
-    int8_t getIndex() const { return this->m_index; };
+    int8_t getIndex() const { return this->mIndex; };
 
-    bool isEmpty() const { return this->m_layers.empty(); };
-    const std::vector<BlockStorage>& getLayers() const { return this->m_layers; };
+    bool isEmpty() const { return this->mLayers.empty(); };
+    const std::vector<BlockStorage>& getLayers() const { return this->mLayers; };
 
     void serialize(BinaryStream& stream, bool isNetwork = false);
 };

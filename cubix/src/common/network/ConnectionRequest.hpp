@@ -32,7 +32,7 @@ public:
     std::string mRawToken;
 
 public:
-    ConnectionRequest(const std::string& rawToken);
+    explicit ConnectionRequest(const std::string& rawToken);
 
     bool isValid() const { return this->mIsValid; };
     bool verify(const std::vector<std::string>&);

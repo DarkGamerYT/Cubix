@@ -11,32 +11,32 @@ typedef std::variant<std::string, int, bool> StateType;
 class BlockState
 {
 private:
-    std::string m_Identifier;
-    std::vector<StateType> m_PossibleStates;
-    StateType m_Value;
+    std::string mIdentifier;
+    std::vector<StateType> mPossibleStates;
+    StateType mValue;
 
 public:
-    BlockState() : m_Value(0) {};
+    BlockState() : mValue(0) {};
     BlockState(const std::string& identifier, const std::vector<StateType>& possibleStates)
-        : m_Identifier(identifier), m_PossibleStates(possibleStates),
-        m_Value(!possibleStates.empty() ? possibleStates.at(0) : 0) {};
+        : mIdentifier(identifier), mPossibleStates(possibleStates),
+        mValue(!possibleStates.empty() ? possibleStates.at(0) : 0) {};
 
-    std::string identifier() const { return this->m_Identifier; };
-    int type() const { return this->m_Value.index(); };
+    std::string identifier() const { return this->mIdentifier; };
+    int type() const { return this->mValue.index(); };
 
-    std::vector<StateType> getPossibleStates() const { return this->m_PossibleStates; };
-    void setPossibleStates(const std::vector<StateType>& states) { this->m_PossibleStates = states; };
+    std::vector<StateType> getPossibleStates() const { return this->mPossibleStates; };
+    void setPossibleStates(const std::vector<StateType>& states) { this->mPossibleStates = states; };
 
-    StateType getValue() const { return this->m_Value; };
+    StateType getValue() const { return this->mValue; };
     BlockState& setValue(const StateType& value)
     {
-        if (value.index() != m_Value.index())
+        if (value.index() != mValue.index())
         {
 
             return *this;
         };
 
-        this->m_Value = value;
+        this->mValue = value;
         return *this;
     };
 };

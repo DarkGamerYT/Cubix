@@ -22,10 +22,10 @@ void Command::run(const CommandOrigin& origin, CommandOutput& output) {
 
 void Command::addFlag(CommandFlag flag) {
     using T = std::underlying_type_t<CommandFlag>;
-    this->m_Flags = static_cast<CommandFlag>(
-        static_cast<T>(flag) | static_cast<T>(this->m_Flags));
+    this->mFlags = static_cast<CommandFlag>(
+        static_cast<T>(flag) | static_cast<T>(this->mFlags));
 };
 bool Command::hasFlag(CommandFlag flag) const {
     using T = std::underlying_type_t<CommandFlag>;
-    return (static_cast<T>(this->m_Flags) & static_cast<T>(flag)) != 0;
+    return (static_cast<T>(this->mFlags) & static_cast<T>(flag)) != 0;
 };

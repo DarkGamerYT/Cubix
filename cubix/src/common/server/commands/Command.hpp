@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "CommandPermissionLevel.hpp"
+#include "types/CommandPermissionLevel.hpp"
 #include "CommandFlag.hpp"
 #include "CommandOrigin.hpp"
 #include "CommandOverload.hpp"
@@ -12,10 +12,10 @@
 class Command
 {
 private:
-    std::string m_Description;
-    CommandPermissionLevel m_PermissionLevel;
-    std::vector<CommandOverload> m_Overloads = {};
-    CommandFlag m_Flags = CommandFlag::None;
+    std::string mDescription;
+    CommandPermissionLevel mPermissionLevel;
+    std::vector<CommandOverload> mOverloads = {};
+    CommandFlag mFlags = CommandFlag::None;
 
 public:
     virtual ~Command() = default;
@@ -23,19 +23,19 @@ public:
     Command(
         const std::string& description,
         const CommandPermissionLevel permissionLevel
-    ) : m_Description(description), m_PermissionLevel(permissionLevel) {};
+    ) : mDescription(description), mPermissionLevel(permissionLevel) {};
 
     virtual void setup() = 0;
     void run(const CommandOrigin&, CommandOutput&);
     virtual void execute(const CommandOrigin&, CommandOutput&) = 0;
 
-    std::string getDescription() const { return this->m_Description; };
-    CommandPermissionLevel getPermissionLevel() const { return this->m_PermissionLevel; };
+    std::string getDescription() const { return this->mDescription; };
+    CommandPermissionLevel getPermissionLevel() const { return this->mPermissionLevel; };
 
-    const std::vector<CommandOverload>& getOverloads() const { return this->m_Overloads; };
-    void addOverload(const CommandOverload& overload) { this->m_Overloads.emplace_back(overload); };
+    const std::vector<CommandOverload>& getOverloads() const { return this->mOverloads; };
+    void addOverload(const CommandOverload& overload) { this->mOverloads.emplace_back(overload); };
 
-    CommandFlag getFlags() const { return this->m_Flags; };
+    CommandFlag getFlags() const { return this->mFlags; };
     void addFlag(CommandFlag flag);
     bool hasFlag(CommandFlag flag) const;
 };

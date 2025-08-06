@@ -2,11 +2,11 @@
 
 #include "../../src/linux/AppPlatform_linux.hpp"
 
-DedicatedServer g_DedicatedServer;
-inline AppPlatform_linux g_AppPlatform;
+DedicatedServer gDedicatedServer;
+inline AppPlatform_linux gAppPlatform;
 int main(int argc, char* argv[])
 {
-    g_DedicatedServer.start();
-    g_DedicatedServer.shutdown();
+    gDedicatedServer.start();
+    gDedicatedServer.shutdown();
     std::cout << "Quit correctly." << std::endl;
 };

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Command.hpp"
 
-class StopCommand : public Command
+class StopCommand final : public Command
 {
 public:
     explicit StopCommand(const CommandPermissionLevel permissionLevel)

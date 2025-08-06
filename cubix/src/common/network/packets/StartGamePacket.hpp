@@ -7,7 +7,7 @@
 #include "../../world/level/storage/Experiments.hpp"
 //#include "../../world/level/storage/GameRules.hpp"
 #include "../../registry/BlockRegistry.hpp"
-#include "../../server/commands/CommandPermissionLevel.hpp"
+#include "../../server/commands/types/CommandPermissionLevel.hpp"
 
 #include "../../nbt/CompoundTag.hpp"
 #include "../../nbt/NbtIo.hpp"

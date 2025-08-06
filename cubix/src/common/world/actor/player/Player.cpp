@@ -37,23 +37,27 @@ auto vectorToTuple(const std::vector<T>& vec) {
 };
 
 void Player::tick() {
-    const int renderDistance = 5;
+    constexpr int renderDistance = 4;
+    {
+        NetworkChunkPublisherUpdatePacket networkChunkPublisher;
+        networkChunkPublisher.position = BlockPos(this->getPosition());
+        networkChunkPublisher.radius = 1 << 4;
 
-    NetworkChunkPublisherUpdatePacket networkChunkPublisher;
-    networkChunkPublisher.position = BlockPos(this->getPosition());
-    networkChunkPublisher.radius = renderDistance << 4;
-
-    this->sendNetworkPacket(networkChunkPublisher);
+        this->sendNetworkPacket(networkChunkPublisher);
+    };
 
     // Chunks
-    std::vector<std::pair<int, int>> chunkPositions;
+    std::vector<ChunkPos> chunkPositions;
     for (int r = 0; r <= renderDistance; ++r) {
         for (int dx = -r; dx <= r; ++dx) {
             for (int dz = -r; dz <= r; ++dz) {
                 if (std::abs(dx) != r && std::abs(dz) != r)
                     continue;
 
-                chunkPositions.emplace_back(dx, dz);
+                const auto& chunkPos = this->getChunkPos();
+                int x = chunkPos.x + dx;
+                int z = chunkPos.z + dz;
+                chunkPositions.emplace_back(x, z);
             };
         };
     };
@@ -61,16 +65,12 @@ void Player::tick() {
     std::vector<LevelChunkPacket> chunkPackets(chunkPositions.size());
     std::for_each(
         std::execution::par_unseq, chunkPositions.begin(), chunkPositions.end(),
-        [&](const std::pair<int, int>& pos) {
-            size_t index = &pos - chunkPositions.data();
-
-            const auto& chunkPos = this->getChunkPos();
-            int x = chunkPos.x + pos.first;
-            int y = chunkPos.x + pos.second;
+        [&](const ChunkPos& pos) {
+            const size_t index = &pos - chunkPositions.data();
 
             // Chunk data stuff
             LevelChunkPacket levelChunk;
-            levelChunk.chunkPosition = { x, y };
+            levelChunk.chunkPosition = pos;
             levelChunk.dimensionId = 0;
             levelChunk.cacheEnabled = false;
             levelChunk.requestSubChunks = false;
@@ -99,7 +99,7 @@ void Player::tick() {
             chunkPackets[index] = levelChunk;
     });
 
-    constexpr size_t batchSize = 10;
+    constexpr size_t batchSize = 12;
     for (size_t i = 0; i < chunkPackets.size(); i += batchSize)
     {
         using difference = std::vector<unsigned char>::difference_type;
@@ -112,6 +112,15 @@ void Player::tick() {
         std::apply([&](auto&... args) {
             this->sendNetworkPacket(args...);
         }, tuple);
+    };
+
+    {
+        NetworkChunkPublisherUpdatePacket networkChunkPublisher;
+        networkChunkPublisher.position = BlockPos(this->getPosition());
+        networkChunkPublisher.radius = 2 << 4;
+        networkChunkPublisher.savedChunks = chunkPositions;
+
+        this->sendNetworkPacket(networkChunkPublisher);
     };
 };
 
@@ -152,12 +161,12 @@ void Player::doInitialSpawn() {
     startGame.enableItemStackNetManager = true;
     startGame.serverVersion = "Cubix v" + SharedConstants::CurrentGameVersion.asString();
     startGame.serverBlockTypeRegistryChecksum = 0;
-    startGame.worldTemplateId = { 0, 0 };
+    startGame.worldTemplateId = Util::UUID{ 0, 0 };
     startGame.clientSideGeneration = false;
     startGame.blockNetworkIdsAreHashes = true;
     startGame.networkPermissions.serverAuthSoundEnabled = true;
 
-    startGame.multiplayerCorrelationId = this->mNetworkPeer->getNetworkServer()->m_Identifier.getCorrelationId();
+    startGame.multiplayerCorrelationId = this->mNetworkPeer->getNetworkServer()->mIdentifier.getCorrelationId();
 
     startGame.levelId = "test";
     startGame.levelName = "Test";

@@ -1,12 +1,12 @@
 #include "NetworkIdentifier.hpp"
 uint64_t NetworkIdentifier::getHash() const
 {
-    switch (this->m_Type)
+    switch (this->mType)
     {
         case NetworkIdentifier::Type::RakNet:
-            return this->m_Guid.g;
+            return this->mGuid.g;
         case NetworkIdentifier::Type::NetherNet:
-            return this->m_NetherNetId;
+            return this->mNetherNetId;
         default: break;
     };
 
@@ -16,18 +16,18 @@ uint64_t NetworkIdentifier::getHash() const
 std::string NetworkIdentifier::getCorrelationId() const
 {
     std::ostringstream stream;
-    switch (this->m_Type)
+    switch (this->mType)
     {
         case NetworkIdentifier::Type::RakNet:
         {
             stream << "<raknet>";
-            stream << NetworkIdentifier::calculateCorrelationId(this->m_Guid);
+            stream << NetworkIdentifier::calculateCorrelationId(this->mGuid);
             break;
         };
         case NetworkIdentifier::Type::NetherNet:
         {
             stream << "<nethernet>";
-            stream << NetworkIdentifier::calculateCorrelationId(this->m_NetherNetId);
+            stream << NetworkIdentifier::calculateCorrelationId(this->mNetherNetId);
             break;
         };
         default:

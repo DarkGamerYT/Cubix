@@ -15,7 +15,7 @@
 class DedicatedServer
 {
 private:
-    ServerInstance m_ServerInstance;
+    ServerInstance mServerInstance;
 
 public:
     DedicatedServer();

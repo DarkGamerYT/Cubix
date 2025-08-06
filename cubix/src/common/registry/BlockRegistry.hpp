@@ -20,7 +20,8 @@ public:
     static void registerBlock(Block& block, bool registerItem = true);
 
     static std::vector<BlockDescriptor> getAll();
-    static const BlockDescriptor& getPermutation(const int32_t hash);
+    static const BlockDescriptor& getPermutation(int32_t hash);
+    static int32_t getBlockHash(const BlockDescriptor&);
 
 private:
     static void updateNetworkIdCounter();

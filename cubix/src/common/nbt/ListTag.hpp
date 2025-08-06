@@ -8,23 +8,24 @@
 typedef std::vector<Nbt::TagPtr> ListType;
 namespace Nbt
 {
-    class ListTag : public Nbt::Tag, public ListType
+    class ListTag final : public Nbt::Tag, public ListType
     {
     private:
-        Nbt::TagType m_Type;
+        Nbt::TagType mType;
 
     public:
-        ListTag(ListType tags = {}, Nbt::TagType type = Nbt::TagType::End)
-            : ListType(std::move(tags)), m_Type(type)
+        explicit ListTag(ListType tags = {}, const Nbt::TagType type = Nbt::TagType::End)
+            : ListType(std::move(tags)), mType(type)
         {
             if (!this->empty())
-                this->m_Type = front()->getId();
+                this->mType = front()->getId();
         };
 
         Nbt::TagType getId() const override { return Nbt::TagType::List; };
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<ListTag>(*this);
         };
+
         std::string toString() const override {
             std::stringstream stream;
             for (size_t i = 0; i < this->size(); i++)

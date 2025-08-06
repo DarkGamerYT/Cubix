@@ -1,11 +1,11 @@
 #include "CommandOrigin.hpp"
 void CommandOrigin::writeNetwork(BinaryStream& stream) {
-    stream.writeUnsignedVarInt(static_cast<uint32_t>(this->m_type));
-    stream.writeUUID(this->m_uuid);
-    stream.writeString<Endianness::NetworkEndian>(this->m_requestId);
+    stream.writeUnsignedVarInt(static_cast<uint32_t>(this->mType));
+    stream.writeUUID(this->mUuid);
+    stream.writeString<Endianness::NetworkEndian>(this->mRequestId);
 
-    if (this->m_type == CommandOriginType::DevConsole || this->m_type == CommandOriginType::Test)
+    if (this->mType == CommandOriginType::DevConsole || this->mType == CommandOriginType::Test)
     {
-        stream.writeSignedVarLong(this->m_playerId);
+        stream.writeSignedVarLong(this->mPlayerId);
     };
 };

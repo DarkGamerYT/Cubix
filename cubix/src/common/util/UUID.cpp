@@ -15,11 +15,11 @@ namespace Util
     {
         std::stringstream stream;
         stream << std::hex << std::setfill('0')
-            << std::setw(8) << static_cast<uint32_t>(m_MostSignificantBits >> 32) << "-"
-            << std::setw(4) << static_cast<uint16_t>(m_MostSignificantBits >> 16) << "-"
-            << std::setw(4) << static_cast<uint16_t>(m_MostSignificantBits) << "-"
-            << std::setw(4) << static_cast<uint16_t>(m_LeastSignificantBits >> 48) << "-"
-            << std::setw(12) << (m_LeastSignificantBits & 0x0000FFFFFFFFFFFFULL);
+            << std::setw(8) << static_cast<uint32_t>(mMostSignificantBits >> 32) << "-"
+            << std::setw(4) << static_cast<uint16_t>(mMostSignificantBits >> 16) << "-"
+            << std::setw(4) << static_cast<uint16_t>(mMostSignificantBits) << "-"
+            << std::setw(4) << static_cast<uint16_t>(mLeastSignificantBits >> 48) << "-"
+            << std::setw(12) << (mLeastSignificantBits & 0x0000FFFFFFFFFFFFULL);
 
         return stream.str();
     };
@@ -54,7 +54,7 @@ namespace Util
             };
         };
 
-        return { mostSignificantBits, leastSignificantBits };
+        return Util::UUID{ mostSignificantBits, leastSignificantBits };
     };
 
     UUID UUID::randomUUID()
@@ -72,6 +72,6 @@ namespace Util
         leastSignificantBits &= 0x3FFFFFFFFFFFFFFFULL;
         leastSignificantBits |= 0x8000000000000000ULL;
 
-        return { mostSignificantBits, leastSignificantBits };
+        return Util::UUID{ mostSignificantBits, leastSignificantBits };
     };
 };

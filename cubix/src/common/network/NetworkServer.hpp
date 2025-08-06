@@ -23,9 +23,9 @@ class NetworkServer
 public:
     virtual ~NetworkServer() = default;
 
-    std::string m_UnconnectedPong;
-    ServerNetworkHandler* m_Network;
-    NetworkIdentifier m_Identifier;
+    std::string mUnconnectedPong;
+    ServerNetworkHandler* mNetwork;
+    NetworkIdentifier mIdentifier;
 
 public:
     virtual void startServer(PortPair, int) = 0;

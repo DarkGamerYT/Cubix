@@ -9,7 +9,7 @@
 #include "../../editor/WorldType.hpp"
 #include "../../network/GamePublishSetting.hpp"
 #include "../../server/ChatRestrictionLevel.hpp"
-#include "../../server/commands/CommandPermissionLevel.hpp"
+#include "../../server/commands/types/PlayerPermissionLevel.hpp"
 
 #include "../Difficulty.hpp"
 #include "../GameMode.hpp"
@@ -26,6 +26,8 @@ struct SpawnSettings {
 };
 
 class LevelSettings {
+    friend struct BinaryStream::serialize<LevelSettings>;
+
 private:
     LevelSeed64 mSeed{ 0 };
     GameType mGameType = GameType::Survival;
@@ -80,7 +82,7 @@ private:
     int mLimitedWorldDepth = 16;
 
     ChatRestrictionLevel mChatRestrictionLevel = ChatRestrictionLevel::None;
-    CommandPermissionLevel mDefaultPermissions = CommandPermissionLevel::Any;
+    PlayerPermissionLevel mPlayerPermissionLevel = PlayerPermissionLevel::Member;
     GeneratorType mGeneratorType = GeneratorType::Overworld;
     SpawnSettings mSpawnSettings;
     Experiments mExperiments{};
@@ -100,15 +102,20 @@ public:
     Difficulty getDifficulty() const { return this->mDifficulty; };
     const LevelSeed64& getSeed() const { return this->mSeed; };
     ExperimentStorage& getExperiments() { return this->mExperiments.experimentList; };
+    PlayerPermissionLevel getPlayerPermissionLevel() const { return this->mPlayerPermissionLevel; };
     bool hasHadExperiments() const { return this->mExperiments.experimentsEverEnabled; };
 
     void setGameType(const GameType gameType) { this->mGameType = gameType; };
     void setDifficulty(const Difficulty difficulty) { this->mDifficulty = difficulty; };
     void setSeed(const LevelSeed64& seed) { this->mSeed = seed; };
+    void setDefaultPermissionLevel(const PlayerPermissionLevel level) { this->mPlayerPermissionLevel = level; };
     void setHasHadExperiments(const bool value) { this->mExperiments.experimentsEverEnabled = value; };
+};
 
-    void readNetwork(BinaryStream&);
-    void writeNetwork(BinaryStream&);
+template <>
+struct BinaryStream::serialize<LevelSettings> {
+    static LevelSettings read(BinaryStream& stream);
+    static void write(const LevelSettings& value, BinaryStream& stream);
 };
 
 #endif //LEVESETTINGS_HPP

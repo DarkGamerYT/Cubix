@@ -13,7 +13,7 @@ private:
     bool mIsBeta;
 
 public:
-    GameVersion(
+    explicit GameVersion(
         const uint16_t major = 1,
         const uint16_t minor = 0,
         const uint16_t patch = 0,
@@ -44,7 +44,7 @@ public:
         uint16_t minor = (version >> 16) & 0xFF;
         uint16_t patch = (version >> 8) & 0xFF;
         uint16_t revision = (version) & 0xFF;
-        return { major, minor, patch, revision };
+        return GameVersion{ major, minor, patch, revision };
     };
 
     std::string asString() const

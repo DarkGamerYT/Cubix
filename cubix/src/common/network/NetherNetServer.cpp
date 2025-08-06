@@ -2,8 +2,8 @@
 #include "ServerNetworkHandler.hpp"
 NetherNetServer::NetherNetServer(ServerNetworkHandler* networkHandler)
 {
-    this->m_Network = networkHandler;
-    this->m_Identifier = NetworkIdentifier(0);
+    this->mNetwork = networkHandler;
+    this->mIdentifier = NetworkIdentifier(0);
 };
 
 void NetherNetServer::startServer(PortPair ports, int maxPlayers)
@@ -23,7 +23,7 @@ void NetherNetServer::disconnectClient(
     const bool skipMessage,
     const std::string& message
 ) {
-    this->m_Network->disconnectClient(
+    this->mNetwork->disconnectClient(
         networkIdentifier, subClientId,
         disconnectReason, skipMessage, message);
 };
@@ -35,9 +35,9 @@ void NetherNetServer::update()
 
 void NetherNetServer::sendPacket(BinaryStream& stream, const NetworkPeer::Reliability reliability)
 {
-    for (const auto &identifier: this->m_Network->getConnections() | std::views::keys)
+    for (const auto &networkPeer: this->mNetwork->getConnections())
     {
-        this->sendPacket(identifier, stream, reliability);
+        this->sendPacket(networkPeer->getNetworkIdentifier(), stream, reliability);
     };
 };
 void NetherNetServer::sendPacket(const NetworkIdentifier& identifier, BinaryStream& stream, NetworkPeer::Reliability reliability)

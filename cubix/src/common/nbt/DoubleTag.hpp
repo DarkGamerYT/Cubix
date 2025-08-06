@@ -5,24 +5,25 @@
 
 namespace Nbt
 {
-    class DoubleTag : public Nbt::Tag
+    class DoubleTag final : public Nbt::Tag
     {
     private:
-        double m_Value;
+        double mValue;
 
     public:
-        DoubleTag(double value = 0)
-            : m_Value(value) {};
+        explicit DoubleTag(const double value = 0)
+            : mValue(value) {};
 
-        void setValue(double value) { this->m_Value = value; };
-        double getValue() const { return this->m_Value; };
+        void setValue(const double value) { this->mValue = value; };
+        double getValue() const { return this->mValue; };
 
         Nbt::TagType getId() const override { return Nbt::TagType::Double; };
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<DoubleTag>(*this);
         };
+
         std::string toString() const override {
-            return std::format("TAG_Double: {}", this->m_Value);
+            return std::format("TAG_Double: {}", this->mValue);
         };
     };
 };

@@ -13,6 +13,8 @@ private:
 public:
     void initialize(const LevelSettings&);
 
+    void tick(uint32_t tick);
+
     std::shared_ptr<LevelSettings> getLevelSettings() const { return this->mLevelSettings; };
 };
 

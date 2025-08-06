@@ -6,24 +6,27 @@
 class BlockDescriptor
 {
 private:
-    std::shared_ptr<Block> m_Block;
-    BlockStates m_States;
+    std::shared_ptr<Block> mBlock;
+    BlockStates mStates;
 
 public:
-    BlockDescriptor() {};
-    BlockDescriptor(const std::shared_ptr<Block>& block)
-        : m_Block(std::move(block)), m_States(m_Block->getStates()) {};
+    BlockDescriptor() = default;
+    explicit BlockDescriptor(const Block& block)
+        : mBlock(std::make_shared<Block>(block)), mStates(mBlock->getStates()) {};
 
-    const std::string& getIdentifier() const { return this->m_Block->getIdentifier(); };
-    int32_t getNetworkId() const { return this->m_Block->getNetworkId(); };
+    explicit BlockDescriptor(const std::shared_ptr<Block>& block)
+        : mBlock(block), mStates(mBlock->getStates()) {};
 
-    BlockState& getState(const std::string& key) { return this->m_States[key]; };
-    BlockStates getStates() const { return this->m_States; };
+    const std::string& getIdentifier() const { return this->mBlock->getIdentifier(); };
+    int32_t getNetworkId() const { return this->mBlock->getNetworkId(); };
 
-    void setState(BlockState& state) { this->m_States.emplace(state.identifier(), state); };
+    BlockState& getState(const std::string& key) { return this->mStates[key]; };
+    BlockStates getStates() const { return this->mStates; };
 
-    const std::shared_ptr<Block>& getBlock() const { return this->m_Block; };
-    bool isValid() const { return this->m_Block != nullptr; };
+    void setState(BlockState& state) { this->mStates.emplace(state.identifier(), state); };
+
+    const std::shared_ptr<Block>& getBlock() const { return this->mBlock; };
+    bool isValid() const { return this->mBlock != nullptr; };
 
     int32_t hash() const;
     std::unique_ptr<Nbt::CompoundTag> serialise() const;

@@ -14,26 +14,26 @@
 class Packet
 {
 private:
-    std::string m_Name;
-    MinecraftPacketIds m_PacketId;
-    SubClientId m_SubClientId = SubClientId::PrimaryClient;
+    std::string mName;
+    MinecraftPacketIds mPacketId;
+    SubClientId mSubClientId = SubClientId::PrimaryClient;
 
 protected:
-    std::chrono::high_resolution_clock::time_point m_CreatedTimepoint;
+    std::chrono::high_resolution_clock::time_point mCreatedTimepoint;
 
 public:
     virtual ~Packet() = default;
 
-    Packet(std::string  name, const MinecraftPacketIds packetId)
-        : m_Name(std::move(name)),
-        m_PacketId(packetId),
-        m_CreatedTimepoint(std::chrono::high_resolution_clock::now()) {};
+    Packet(std::string  name, const MinecraftPacketIds packetId) :
+        mName(std::move(name)),
+        mPacketId(packetId),
+        mCreatedTimepoint(std::chrono::high_resolution_clock::now()) {};
 
-    const std::string& getName() const { return this->m_Name; };
-    MinecraftPacketIds getId() const { return this->m_PacketId; };
+    const std::string& getName() const { return this->mName; };
+    MinecraftPacketIds getId() const { return this->mPacketId; };
 
-    void setSubClientId(const SubClientId subClientId) { this->m_SubClientId = subClientId; };
-    SubClientId getSubClientId() const { return this->m_SubClientId; };
+    void setSubClientId(const SubClientId subClientId) { this->mSubClientId = subClientId; };
+    SubClientId getSubClientId() const { return this->mSubClientId; };
 
     virtual void read(BinaryStream&) = 0;
     virtual void write(BinaryStream&) = 0;

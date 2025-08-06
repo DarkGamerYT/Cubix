@@ -1,31 +1,32 @@
 #include "BlockStorage.hpp"
 BlockStorage::BlockStorage()
-    : m_blockIndexes(16 * 16 * 16)
+    : mBlockIndexes(16 * 16 * 16)
 {
-    m_palettes.push_back(Block::hash(BlockRegistry::AIR));
+    mPalettes.emplace_back(BlockRegistry::AIR.getIdentifier(), Block::hash(BlockRegistry::AIR));
 };
 
 void BlockStorage::setBlock(const Vec3& location, const Block& block) {
     const auto& palette = BlockStorage::fetchPalette(block);
 
     const auto& index = BlockStorage::getIndex(location);
-    m_blockIndexes[index] = palette;
+    mBlockIndexes[index] = palette;
 };
 
 size_t BlockStorage::fetchPalette(const Block& block) {
-    const auto& hash = Block::hash(block);
+    const auto& iterator = std::ranges::find_if(mPalettes, [block](const auto& pair) {
+        return pair.first == block.getIdentifier();
+    });
 
-    const auto& iterator = std::ranges::find(m_palettes, hash);
-    if (iterator != m_palettes.end())
-        return std::distance(m_palettes.begin(), iterator);
+    if (iterator != mPalettes.end())
+        return std::distance(mPalettes.begin(), iterator);
 
-    m_palettes.push_back(hash);
-    return m_palettes.size() - 1;
+    mPalettes.emplace_back(block.getIdentifier(), BlockRegistry::getBlockHash(BlockDescriptor{ block }));
+    return mPalettes.size() - 1;
 };
 
 void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
 {
-    int bitsPerBlock = std::ceil(std::log2(m_palettes.size()));
+    int bitsPerBlock = std::ceil(std::log2(mPalettes.size()));
     switch (bitsPerBlock)
     {
         case 0:
@@ -47,7 +48,7 @@ void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
     stream.writeByte((bitsPerBlock << 1) | 1);
 
     const int blocksPerWord = std::floor(32.0 / bitsPerBlock);
-    const int wordsPerBlock = std::ceil(m_blockIndexes.size() / blocksPerWord);
+    const int wordsPerBlock = std::ceil(mBlockIndexes.size() / blocksPerWord);
 
     for (int w = 0; w < wordsPerBlock; w++) {
         int32_t word = 0;
@@ -57,14 +58,14 @@ void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
             if (index >= 4096)
                 break;
 
-            int state = 0;
-            if (index < m_blockIndexes.size())
-                state = m_blockIndexes[index];
+            size_t state = 0;
+            if (index < mBlockIndexes.size())
+                state = mBlockIndexes[index];
 
             const int offset = block * bitsPerBlock;
 
             // Write the block state to the word
-            word |= state << offset;
+            word |= static_cast<int32_t>(state) << offset;
         };
 
         stream.writeInt(word);
@@ -72,13 +73,13 @@ void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
 
     if (isNetwork)
     {
-        stream.writeSignedVarInt(static_cast<int32_t>(m_palettes.size()));
+        stream.writeSignedVarInt(static_cast<int32_t>(mPalettes.size()));
     }
     else {
-        stream.writeInt(m_palettes.size());
+        stream.writeInt(static_cast<int32_t>(mPalettes.size()));
     };
         
-    for (const int32_t state : m_palettes)
+    for (const auto &state: mPalettes | std::views::values)
     {
         if (isNetwork)
         {

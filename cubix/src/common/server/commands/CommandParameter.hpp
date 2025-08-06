@@ -10,27 +10,27 @@
 class CommandParameter
 {
 private:
-    std::string m_Name;
-    CommandParameterType m_Type;
-    bool m_IsOptional = false;
-    uint64_t m_Symbol = static_cast<uint64_t>(CommandSymbol::Epsilon);
-    CommandParameterOption m_Options = CommandParameterOption::None;
+    std::string mName;
+    CommandParameterType mType;
+    bool mIsOptional = false;
+    uint64_t mSymbol = static_cast<uint64_t>(CommandSymbol::Epsilon);
+    CommandParameterOption mOptions = CommandParameterOption::None;
 
 public:
     explicit CommandParameter(const std::string& name, const CommandParameterType type = CommandParameterType::Basic)
-        : m_Name(name), m_Type(type) {};
+        : mName(name), mType(type) {};
 
-    const std::string& getName() const { return this->m_Name; };
-    CommandParameterType getType() const { return this->m_Type; };
+    const std::string& getName() const { return this->mName; };
+    CommandParameterType getType() const { return this->mType; };
 
-    bool isOptional() const { return this->m_IsOptional; };
-    CommandParameter& setOptional(const bool optional) { this->m_IsOptional = optional; return *this; };
+    bool isOptional() const { return this->mIsOptional; };
+    CommandParameter& setOptional(const bool optional) { this->mIsOptional = optional; return *this; };
 
-    uint64_t getSymbol() const { return this->m_Symbol; };
-    CommandParameter& setSymbol(const uint64_t symbol) { this->m_Symbol = symbol; return *this; };
+    uint64_t getSymbol() const { return this->mSymbol; };
+    CommandParameter& setSymbol(const uint64_t symbol) { this->mSymbol = symbol; return *this; };
     CommandParameter& setSymbol(const CommandSymbol symbol) { return this->setSymbol(static_cast<uint64_t>(symbol)); };
 
-    CommandParameterOption getOptions() const { return this->m_Options; };
+    CommandParameterOption getOptions() const { return this->mOptions; };
     CommandParameter& addOption(CommandParameterOption option);
 };
 

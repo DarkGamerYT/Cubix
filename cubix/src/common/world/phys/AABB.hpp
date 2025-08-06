@@ -13,12 +13,12 @@ public:
 public:
     AABB() : min(Vec3()), max(Vec3()) {};
 
-    AABB(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
+    AABB(const double minX, const double minY, const double minZ, const double maxX, const double maxY, const double maxZ)
         : min(Vec3(minX, minY, minZ)), max(Vec3(maxX, maxY, maxZ)) {};
 
     AABB(const Vec3& min, const Vec3& max) : min(min), max(max) {};
 
-    AABB(const Vec3& center, double radius)
+    AABB(const Vec3& center, const double radius)
         : min(center - radius), max(center + radius) {};
 
 
@@ -34,10 +34,15 @@ public:
         max = other.max;
     };
     
-    void set(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
+    void set(const double minX, const double minY, const double minZ, const double maxX, const double maxY, const double maxZ)
     {
-        min = Vec3(minX, minY, minZ);
-        max = Vec3(maxX, maxY, maxZ);
+        min.x = minX;
+        min.y = minY;
+        min.z = minZ;
+
+        max.x = maxX;
+        max.y = maxY;
+        max.z = maxZ;
     };
 
     void expand(const Vec3& amount) {
@@ -45,14 +50,18 @@ public:
         max = max + amount;
     };
 
-    AABB expanded(const Vec3& amount) const { return { min - amount, max + amount }; };
+    AABB expanded(const Vec3& amount) const {
+        return { min - amount, max + amount };
+    };
 
     void move(const Vec3& offset)
     {
         min = min + offset;
         max = max + offset;
     };
-    void move(double dx, double dy, double dz) { this->move({ dx, dy, dz }); };
+    void move(double dx, double dy, double dz) {
+        this->move({ dx, dy, dz });
+    };
 
     AABB translated(const Vec3& offset) const
     {
@@ -73,9 +82,9 @@ public:
 
     static double distanceSquared(const AABB& aabb, const Vec3& point)
     {
-        double dx = std::max(aabb.min.x - point.x, 0.0) + std::max(point.x - aabb.max.x, 0.0);
-        double dy = std::max(aabb.min.y - point.y, 0.0) + std::max(point.y - aabb.max.y, 0.0);
-        double dz = std::max(aabb.min.z - point.z, 0.0) + std::max(point.z - aabb.max.z, 0.0);
+        const double dx = std::max(aabb.min.x - point.x, 0.0) + std::max(point.x - aabb.max.x, 0.0);
+        const double dy = std::max(aabb.min.y - point.y, 0.0) + std::max(point.y - aabb.max.y, 0.0);
+        const double dz = std::max(aabb.min.z - point.z, 0.0) + std::max(point.z - aabb.max.z, 0.0);
         return (dx * dx + dy * dy + dz * dz);
     };
     static double distanceSquared(const AABB& a, const AABB& b)
@@ -103,13 +112,13 @@ public:
 
     double getVolume() const
     {
-        Vec3 size = this->getSize();
+        const Vec3& size = this->getSize();
         return size.x * size.y * size.z;
     };
 
     bool isEmpty() const
     {
-        Vec3 size = this->getSize();
+        const Vec3& size = this->getSize();
         return size.x <= 0 || size.y <= 0 || size.z <= 0;
     };
 

@@ -45,13 +45,24 @@ std::vector<BlockDescriptor> BlockRegistry::getAll() {
     blocks.reserve(sBlocks.size());
 
     for (const auto &block: BlockRegistry::sBlocks | std::views::values)
-        blocks.push_back(std::make_shared<Block>(block));
+        blocks.emplace_back(std::make_shared<Block>(block));
 
     return blocks;
 };
 
 const BlockDescriptor& BlockRegistry::getPermutation(const int32_t hash) {
     return BlockRegistry::sPermutations[hash];
+};
+
+int32_t BlockRegistry::getBlockHash(const BlockDescriptor& descriptor) {
+    const auto it = std::ranges::find_if(sPermutations, [&](const auto& pair) {
+        return pair.second.getIdentifier() == descriptor.getIdentifier();;
+    });
+
+    if (it == sPermutations.end())
+        return descriptor.hash();
+
+    return it->first;
 };
 
 void BlockRegistry::updateNetworkIdCounter()

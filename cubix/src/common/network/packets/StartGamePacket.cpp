@@ -13,7 +13,7 @@ void StartGamePacket::write(BinaryStream& stream)
     stream.writeVec3(this->position);
     stream.writeVec2(this->rotation);
 
-    this->levelSettings->writeNetwork(stream);
+    BinaryStream::serialize<LevelSettings>::write(*this->levelSettings, stream);
 
     stream.writeString<Endianness::NetworkEndian>(this->levelId);
     stream.writeString<Endianness::NetworkEndian>(this->levelName);

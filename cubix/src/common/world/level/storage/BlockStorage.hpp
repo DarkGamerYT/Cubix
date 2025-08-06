@@ -8,8 +8,8 @@
 class BlockStorage
 {
 private:
-    std::vector<int32_t> m_palettes;
-    std::vector<uint32_t> m_blockIndexes;
+    std::vector<std::pair<std::string, int32_t>> mPalettes;
+    std::vector<uint32_t> mBlockIndexes;
 
 public:
     BlockStorage();

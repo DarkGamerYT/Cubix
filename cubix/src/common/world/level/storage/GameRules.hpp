@@ -7,54 +7,55 @@
 
 class GameRules {
 private:
-    std::vector<GameRule> mGameRules;
+    std::vector<std::shared_ptr<IGameRule>> mGameRules;
 
 public:
     GameRules() = default;
 
     void initialize();
+    void registerGameRule(const IGameRule& gameRule);
 
-    std::vector<GameRule> getRules() const { return this->mGameRules; };
+    std::vector<std::shared_ptr<IGameRule>> getRules() const { return this->mGameRules; };
 
 public:
-    static GameRule CommandBlockOutput;
-    static GameRule DoDaylightCycle;
-    static GameRule DoEntityDrops;
-    static GameRule DoFireTick;
-    static GameRule RecipesUnlock;
-    static GameRule DoLimitedCrafting;
-    static GameRule DoMobLoot;
-    static GameRule DoMobSpawning;
-    static GameRule DoTileDrops;
-    static GameRule DoWeatherCycle;
-    static GameRule DrowningDamage;
-    static GameRule FallDamage;
-    static GameRule FireDamage;
-    static GameRule KeepInventory;
-    static GameRule MobGriefing;
-    static GameRule Pvp;
-    static GameRule ShowCoordinates;
-    static GameRule ShowDaysPlayed;
-    static GameRule DoNaturalRegeneration;
-    static GameRule DoTntExplode;
-    static GameRule SendCommandFeedback;
-    static GameRule LocatorBar;
-    static GameRule MaxCommandChainLength;
-    static GameRule DoInsomnia;
-    static GameRule CommandBlocksEnabled;
-    static GameRule RandomTickSpeed;
-    static GameRule DoImmediateRespawn;
-    static GameRule ShowDeathMessages;
-    static GameRule FunctionCommandLimit;
-    static GameRule PlayerSpawnRadius;
-    static GameRule ShowTags;
-    static GameRule FreezeDamage;
-    static GameRule RespawnBlocksExplode;
-    static GameRule ShowBorderEffect;
-    static GameRule ShowRecipeMessages;
-    static GameRule PlayerSleepingPercentage;
-    static GameRule ProjectilesCanBreakBlocks;
-    static GameRule TntExplosionDropDecay;
+    static GameRule<bool> CommandBlockOutput;
+    static GameRule<bool> DoDaylightCycle;
+    static GameRule<bool> DoEntityDrops;
+    static GameRule<bool> DoFireTick;
+    static GameRule<bool> RecipesUnlock;
+    static GameRule<bool> DoLimitedCrafting;
+    static GameRule<bool> DoMobLoot;
+    static GameRule<bool> DoMobSpawning;
+    static GameRule<bool> DoTileDrops;
+    static GameRule<bool> DoWeatherCycle;
+    static GameRule<bool> DrowningDamage;
+    static GameRule<bool> FallDamage;
+    static GameRule<bool> FireDamage;
+    static GameRule<bool> KeepInventory;
+    static GameRule<bool> MobGriefing;
+    static GameRule<bool> PVP;
+    static GameRule<bool> ShowCoordinates;
+    static GameRule<bool> ShowDaysPlayed;
+    static GameRule<bool> DoNaturalRegeneration;
+    static GameRule<bool> DoTntExplode;
+    static GameRule<bool> SendCommandFeedback;
+    static GameRule<bool> LocatorBar;
+    static GameRule<int> MaxCommandChainLength;
+    static GameRule<bool> DoInsomnia;
+    static GameRule<bool> CommandBlocksEnabled;
+    static GameRule<int> RandomTickSpeed;
+    static GameRule<bool> DoImmediateRespawn;
+    static GameRule<bool> ShowDeathMessages;
+    static GameRule<int> FunctionCommandLimit;
+    static GameRule<int> PlayerSpawnRadius;
+    static GameRule<bool> ShowTags;
+    static GameRule<bool> FreezeDamage;
+    static GameRule<bool> RespawnBlocksExplode;
+    static GameRule<bool> ShowBorderEffect;
+    static GameRule<bool> ShowRecipeMessages;
+    static GameRule<int> PlayerSleepingPercentage;
+    static GameRule<bool> ProjectilesCanBreakBlocks;
+    static GameRule<bool> TntExplosionDropDecay;
 };
 
 #endif //GAMERULES_HPP

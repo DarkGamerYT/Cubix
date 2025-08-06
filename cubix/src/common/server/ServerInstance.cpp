@@ -6,21 +6,23 @@
 
 ServerInstance::ServerInstance()
 {
-    this->m_Level = std::make_shared<Level>();
+    this->mLevel = std::make_shared<ServerLevel>(this);
 };
 ServerInstance::~ServerInstance()
 {
     this->shutdown();
-    if (this->m_ServerThread.joinable())
+    if (this->mServerThread.joinable())
     {
-        this->m_ServerThread.join();
+        this->mServerThread.join();
     };
 };
 
 void ServerInstance::initializeServer(
     const LevelSettings& levelSettings,
     const PlayerTickPolicy tickPolicy,
-    const ConnectionDefinition& connectionDefintion
+    const ConnectionDefinition& connectionDefintion,
+    const bool requireOnlineAuthentication,
+    const TransportLayer transportLayer
 ) {
     BlockStateRegistry::initialize();
     BlockRegistry::initialize();
@@ -29,12 +31,12 @@ void ServerInstance::initializeServer(
 
     this->initializeCommands();
 
-    this->m_Level->initialize(levelSettings);
+    this->mLevel->initialize(levelSettings);
 
-    this->m_Network = std::make_shared<ServerNetworkHandler>(this->m_Level, this, connectionDefintion);
-    this->m_Network->setTransportLayer(TransportLayer::RakNet);
+    this->mNetwork = std::make_shared<ServerNetworkHandler>(this->mLevel, this, connectionDefintion, requireOnlineAuthentication);
+    this->mNetwork->setTransportLayer(transportLayer);
 
-    this->m_PlayerTickPolicy = tickPolicy;
+    this->mPlayerTickPolicy = tickPolicy;
     this->startServerThread();
 };
 
@@ -49,25 +51,20 @@ void ServerInstance::initializeCommands()
 
 void ServerInstance::onTick(const uint32_t nTick) const
 {
-    if (this->m_InstanceState != InstanceState::Running)
+    if (this->mInstanceState != InstanceState::Running)
         return;
 
     std::vector<std::future<void>> tasks;
 
-    // Logger::log(Logger::LogLevel::Debug, "Current tick: {}", nTick);
+    tasks.emplace_back(std::async(std::launch::async, &ServerLevel::tick, this->mLevel.get(), nTick));
+    tasks.emplace_back(std::async(std::launch::async, &ServerNetworkHandler::onTick, this->mNetwork.get(), nTick));
 
-    int playerTickInterval = 1;
-    if (this->m_PlayerTickPolicy == PlayerTickPolicy::THROTTLED)
-        playerTickInterval = 2;
-
-    if (nTick % playerTickInterval == 0)
+    // Player ticks
+    if ((this->mPlayerTickPolicy == PlayerTickPolicy::THROTTLED && nTick % 2 == 0)
+        || this->mPlayerTickPolicy == PlayerTickPolicy::THROTTLED)
     {
-        // Player ticks
-        this->m_Network->onTickPlayers(nTick);
+        tasks.emplace_back(std::async(std::launch::async, &ServerNetworkHandler::onTickPlayers, this->mNetwork.get(), nTick));
     };
-
-    tasks.emplace_back(std::async(std::launch::async,
-        [&] { this->m_Network->onTick(nTick); }));
 
     for (auto& task : tasks)
     {
@@ -91,30 +88,30 @@ void ServerInstance::runCommand(const std::string& command, const CommandOrigin&
 
 void ServerInstance::shutdown()
 {
-    if (this->m_InstanceState != InstanceState::Running)
+    if (this->mInstanceState != InstanceState::Running)
         return;
 
     Logger::log(Logger::LogLevel::Info, "Shutting down server...");
 
-    this->m_InstanceState.store(InstanceState::Stopped);
-    this->m_InstanceState.notify_all();
+    this->mInstanceState.store(InstanceState::Stopped);
+    this->mInstanceState.notify_all();
 
-    this->m_Network->shutdown();
+    this->mNetwork->shutdown();
 };
 
 void ServerInstance::startServerThread()
 {
-    this->m_InstanceState.store(InstanceState::Running);
-    this->m_InstanceState.notify_all();
-    this->m_Network->initializeNetwork();
+    this->mInstanceState.store(InstanceState::Running);
+    this->mInstanceState.notify_all();
+    this->mNetwork->initializeNetwork();
 
-    this->m_ServerThread = std::thread([&](ServerInstance* p_ServerInstance) {
-        const int msPerTick = 1000 / p_ServerInstance->m_TicksPerSecond;
+    this->mServerThread = std::thread([&](ServerInstance* p_ServerInstance) {
+        const int msPerTick = 1000 / p_ServerInstance->mTicksPerSecond;
 
         int tickCount = 0;
         auto previousTime = std::chrono::high_resolution_clock::now();
 
-        while (p_ServerInstance->m_InstanceState == InstanceState::Running)
+        while (p_ServerInstance->mInstanceState == InstanceState::Running)
         {
             constexpr int maxSkipTicks = 5;
             auto currentTime = std::chrono::high_resolution_clock::now();
@@ -123,8 +120,8 @@ void ServerInstance::startServerThread()
             while (elapsedTime >= msPerTick && tickCount < maxSkipTicks)
             {
                 // Tick the server
-                p_ServerInstance->onTick(p_ServerInstance->m_CurrentTick);
-                p_ServerInstance->m_CurrentTick++;
+                p_ServerInstance->onTick(p_ServerInstance->mCurrentTick);
+                p_ServerInstance->mCurrentTick++;
 
                 elapsedTime -= msPerTick;
                 previousTime += std::chrono::milliseconds(msPerTick);

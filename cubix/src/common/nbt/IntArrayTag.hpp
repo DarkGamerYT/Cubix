@@ -6,7 +6,7 @@
 
 namespace Nbt
 {
-    class IntArrayTag : public Nbt::Tag, public std::vector<int32_t>
+    class IntArrayTag final : public Nbt::Tag, public std::vector<int32_t>
     {
     public:
         using std::vector<int32_t>::vector;
@@ -15,6 +15,7 @@ namespace Nbt
         std::unique_ptr<Nbt::Tag> copy() const override {
             return std::make_unique<IntArrayTag>(*this);
         };
+
         std::string toString() const override {
             return std::format("TAG_IntArray: [{} bytes]", this->size());
         };

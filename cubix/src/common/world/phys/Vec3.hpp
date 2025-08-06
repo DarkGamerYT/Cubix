@@ -13,7 +13,7 @@ public:
 
 public:
     Vec3() : x(0), y(0), z(0) {};
-    Vec3(double x, double y, double z)
+    Vec3(const double x, const double y, const double z)
         : x(x), y(y), z(z) {};
 
     double lengthSquared() const
@@ -59,13 +59,13 @@ public:
 
     std::string toString() const;
 
-    Vec3 operator+(double scalar) const { return { x + scalar, y + scalar, z + scalar }; };
+    Vec3 operator+(const double scalar) const { return { x + scalar, y + scalar, z + scalar }; };
     Vec3 operator+(const Vec3& other) const { return { x + other.x, y + other.y, z + other.z }; };
-    Vec3 operator-(double scalar) const { return { x - scalar, y - scalar, z - scalar }; };
+    Vec3 operator-(const double scalar) const { return { x - scalar, y - scalar, z - scalar }; };
     Vec3 operator-(const Vec3& other) const { return { x - other.x, y - other.y, z - other.z }; };
-    Vec3 operator*(double scalar) const { return { x * scalar, y * scalar, z * scalar }; };
+    Vec3 operator*(const double scalar) const { return { x * scalar, y * scalar, z * scalar }; };
     Vec3 operator*(const Vec3& other) const { return { x * other.x, y * other.y, z * other.z }; };
-    Vec3 operator/(double scalar) const { return { x / scalar, y / scalar, z / scalar }; };
+    Vec3 operator/(const double scalar) const { return { x / scalar, y / scalar, z / scalar }; };
     Vec3 operator/(const Vec3& other) const { return { x / other.x, y / other.y, z / other.z }; };
     
     bool operator<(const Vec3& other) const { return x < other.x && y < other.y && z < other.z; };

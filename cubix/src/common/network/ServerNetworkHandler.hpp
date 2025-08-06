@@ -7,6 +7,7 @@
 
 #include "../SharedConstants.hpp"
 #include "../SubClientId.hpp"
+#include "../server/ServerLevel.hpp"
 #include "../world/GameMode.hpp"
 #include "../world/Difficulty.hpp"
 #include "../world/level/chunk/Chunk.hpp"
@@ -59,17 +60,22 @@ public:
     using Clients = std::unordered_map<NetworkIdentifier, Players>;
 
 private:
-    TransportLayer m_TransportLayer = TransportLayer::Default;
-    Connections m_Connections;
-    Clients m_Players;
-    ConnectionDefinition m_ConnectionDefinition;
+    TransportLayer mTransportLayer = TransportLayer::Default;
+    Connections mConnections;
+    Clients mPlayers;
+    ConnectionDefinition mConnectionDefinition;
+    bool mRequireOnlineAuthentication;
 
-    std::unique_ptr<NetworkServer> m_NetworkServer;
-    ServerInstance* m_ServerInstance;
-    std::shared_ptr<Level> m_Level;
+    std::unique_ptr<NetworkServer> mNetworkServer;
+    ServerInstance* mServerInstance;
+    std::shared_ptr<ServerLevel> mLevel;
 
 public:
-    ServerNetworkHandler(const std::shared_ptr<Level>&, ServerInstance*, const ConnectionDefinition&);
+    ServerNetworkHandler(
+        const std::shared_ptr<ServerLevel>&,
+        ServerInstance*,
+        const ConnectionDefinition&,
+        bool requireOnlineAuthentication);
     ~ServerNetworkHandler();
 
     void initializeNetwork();
@@ -77,10 +83,11 @@ public:
     void onTickPlayers(uint32_t nTick);
     void shutdown();
 
-    void setTransportLayer(const TransportLayer layer) { this->m_TransportLayer = layer; };
-    TransportLayer getTransportLayer() const { return this->m_TransportLayer; };
-    const Connections& getConnections() const { return this->m_Connections; };
-    const Clients& getPlayers() const { return this->m_Players; };
+    void setTransportLayer(const TransportLayer layer) { this->mTransportLayer = layer; };
+    TransportLayer getTransportLayer() const { return this->mTransportLayer; };
+
+    std::vector<std::shared_ptr<NetworkPeer>> getConnections() const;
+    std::vector<std::shared_ptr<Player>> getPlayers() const;
 
     /*NetworkIdentifier getNetworkIdentifier(const std::string& xuid) {
         const auto it = std::ranges::find_if(

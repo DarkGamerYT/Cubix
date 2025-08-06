@@ -7,19 +7,19 @@
 
 class Actor {
 private:
-    Vec3 m_position;
-    Vec2 m_rotation;
-    Vec3 m_velocity;
+    Vec3 mPosition;
+    Vec2 mRotation;
+    Vec3 mVelocity;
 
 public:
     Actor() = default;
     virtual ~Actor() = default;
 
-    const Vec3& getPosition() const { return this->m_position; };
+    const Vec3& getPosition() const { return this->mPosition; };
     ChunkPos getChunkPos() const {
         return {
-            static_cast<int>(this->m_position.x) >> 4,
-            static_cast<int>(this->m_position.z) >> 4
+            static_cast<int>(this->mPosition.x) >> 4,
+            static_cast<int>(this->mPosition.z) >> 4
         };
     };
 

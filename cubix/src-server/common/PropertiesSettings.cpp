@@ -10,30 +10,10 @@ static std::string trim(std::string& value)
 
 PropertiesSettings::PropertiesSettings(const std::string& name)
 {
-    this->m_LevelName = "level";
-    this->m_ServerName = "Dedicated Server";
-    this->m_MaxPlayers = 10;
-    this->m_ServerPort = 19132;
-    this->m_ServerPortV6 = 19133;
-    this->m_GameMode = "survival";
-    this->m_Difficulty = "normal";
-    this->m_OpPermissionLevel = 1;
-    this->m_ChatRestrictionLevel = 0;
-    this->m_CompressionThreshold = 0;
-    this->m_CompressionAlgorithm = 0x00;
-    this->m_ForceGameMode = false;
-    this->m_AllowCheats = false;
-    this->m_TickDistance = 4;
-    this->m_DefaultPermissionLevel = "member";
-    this->m_PlayerTickPolicy = "greedy";
-    this->m_OnlineMode = true;
-    this->m_AllowList = false;
-    this->m_IsVisibleToLan = true;
-
     std::ifstream file(name);
     if (!file.is_open())
     {
-        this->m_IsLoaded = false;
+        this->mIsLoaded = false;
         return;
     };
 
@@ -67,75 +47,115 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
         static const std::unordered_map<std::string, std::function<void(std::string)>> actions = {
             { "gamemode",
                 [this](const std::string& v) {
-                    Util::toLower(this->m_GameMode);
-                    this->m_GameMode = v;
+                    Util::toLower(v);
+                    if (v == "creative" || v == "1" || v == "c")
+                        this->mGameMode = GameType::Creative;
+
+                    else if (v == "adventure" || v == "2" || v == "a")
+                        this->mGameMode = GameType::Adventure;
+
+                    else if (v == "spectator")
+                        this->mGameMode = GameType::Spectator;
+
+                    else this->mGameMode = GameType::Survival;
                 }
             },
 
             { "difficulty",
                 [this](const std::string& v) {
-                    Util::toLower(this->m_Difficulty);
-                    this->m_Difficulty = v;
+                    Util::toLower(v);
+                    if (v == "peaceful" || v == "0")
+                        this->mDifficulty = Difficulty::Peaceful;
+
+                    else if (v == "normal" || v == "2")
+                        this->mDifficulty = Difficulty::Normal;
+
+                    else if (v == "hard" || v == "3")
+                        this->mDifficulty = Difficulty::Hard;
+
+                    else this->mDifficulty = Difficulty::Easy;
                 }
             },
 
             { "server-name",
-                [this](const std::string& v) { this->m_ServerName = v; } },
+                [this](const std::string& v) { this->mServerName = v; } },
 
             { "max-players",
-                [this](const std::string& v) { this->m_MaxPlayers = PropertiesSettings::parseInt(v); } },
+                [this](const std::string& v) { this->mMaxPlayers = PropertiesSettings::parseInt(v); } },
 
             { "op-permission-level",
-                [this](const std::string& v) { this->m_OpPermissionLevel = PropertiesSettings::parseInt(v); } },
-
-            { "server-port",
-                [this](const std::string& v) { this->m_ServerPort = PropertiesSettings::parseInt(v); } },
-
-            { "server-portv6",
-                [this](const std::string& v) { this->m_ServerPortV6 = PropertiesSettings::parseInt(v); } },
-
-            { "level-name",
-                [this](const std::string& v) { this->m_LevelName = v; } },
-
-            { "level-seed",
-                [this](const std::string& v) { this->m_LevelSeed = v; } },
-
-            { "force-gamemode",
-                [this](const std::string& v) { this->m_ForceGameMode = PropertiesSettings::parseBoolean(v); } },
-
-            { "allow-cheats",
-                [this](const std::string& v) { this->m_AllowCheats = PropertiesSettings::parseBoolean(v); } },
-
-            { "tick-distance",
-                [this](const std::string& v) { this->m_TickDistance = PropertiesSettings::parseInt(v); } },
-
-            { "player-tick-policy",
                 [this](const std::string& v) {
-                    Util::toLower(this->m_PlayerTickPolicy);
-                    this->m_PlayerTickPolicy = v;
+                    const int value = PropertiesSettings::parseInt(v);
+                    if (value <= 4)
+                        this->mOpPermissionLevel = static_cast<CommandPermissionLevel>(value);
+
+                    else this->mOpPermissionLevel = CommandPermissionLevel::GameDirectors;
                 }
             },
 
+            { "server-port",
+                [this](const std::string& v) { this->mServerPort = PropertiesSettings::parseInt(v); } },
+
+            { "server-portv6",
+                [this](const std::string& v) { this->mServerPortV6 = PropertiesSettings::parseInt(v); } },
+
+            { "level-name",
+                [this](const std::string& v) { this->mLevelName = v; } },
+
+            { "level-seed",
+                [this](const std::string& v) { this->mLevelSeed = v; } },
+
+            { "force-gamemode",
+                [this](const std::string& v) { this->mForceGameMode = PropertiesSettings::parseBoolean(v); } },
+
+            { "allow-cheats",
+                [this](const std::string& v) { this->mAllowCheats = PropertiesSettings::parseBoolean(v); } },
+
+            { "tick-distance",
+                [this](const std::string& v) { this->mTickDistance = PropertiesSettings::parseInt(v); } },
+
+            { "player-tick-policy",
+                [this](const std::string& v) {
+                    Util::toLower(v);
+                    if (v == "throttled")
+                        this->mPlayerTickPolicy = PlayerTickPolicy::THROTTLED;
+
+                    else this->mPlayerTickPolicy = PlayerTickPolicy::GREEDY;
+            }
+            },
+
+            { "transport-layer-type",
+                [this](const std::string& v) {
+                    Util::toLower(v);
+                    if (v == "raknet")
+                        this->mTransportLayer = TransportLayer::RakNet;
+                    else if (v == "nethernet")
+                        this->mTransportLayer = TransportLayer::NetherNet;
+
+                    else this->mTransportLayer = TransportLayer::Default;
+            }
+            },
+
             { "allow-list",
-                [this](const std::string& v) { this->m_AllowList = PropertiesSettings::parseBoolean(v); } },
+                [this](const std::string& v) { this->mAllowList = PropertiesSettings::parseBoolean(v); } },
 
             { "online-mode",
-                [this](const std::string& v) { this->m_OnlineMode = PropertiesSettings::parseBoolean(v); } },
+                [this](const std::string& v) { this->mOnlineMode = PropertiesSettings::parseBoolean(v); } },
 
             { "enable-lan-visibility",
-                [this](const std::string& v) { this->m_IsVisibleToLan = PropertiesSettings::parseBoolean(v); } },
+                [this](const std::string& v) { this->mIsVisibleToLan = PropertiesSettings::parseBoolean(v); } },
 
             { "compression-threshold",
-                [this](const std::string& v) { this->m_CompressionThreshold = static_cast<short>(PropertiesSettings::parseInt(v)); } },
+                [this](const std::string& v) { this->mCompressionThreshold = static_cast<short>(PropertiesSettings::parseInt(v)); } },
 
             { "chat-restriction",
                 [this](const std::string& v) {
                     Util::toLower(v);
                     if (v == "dropped")
-                        this->m_ChatRestrictionLevel = 1;
+                        this->mChatRestrictionLevel = ChatRestrictionLevel::Dropped;
                     else if (v == "disabled")
-                        this->m_ChatRestrictionLevel = 2;
-                    else this->m_ChatRestrictionLevel = 0;
+                        this->mChatRestrictionLevel = ChatRestrictionLevel::Disabled;
+                    else this->mChatRestrictionLevel = ChatRestrictionLevel::None;
                 }
             },
 
@@ -143,17 +163,22 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
                 [this](const std::string& v) {
                     Util::toLower(v);
                     if (v == "zlib")
-                        this->m_CompressionAlgorithm = 0x01;
+                        this->mCompressionAlgorithm = CompressionType::Zlib;
                     else if (v == "snappy")
-                        this->m_CompressionAlgorithm = 0x02;
-                    else this->m_CompressionAlgorithm = 0x00;
+                        this->mCompressionAlgorithm = CompressionType::Snappy;
+                    else this->mCompressionAlgorithm = CompressionType::None;
                 }
             },
 
             { "default-player-permission-level",
                 [this](const std::string& v) {
-                    Util::toLower(this->m_DefaultPermissionLevel);
-                    this->m_DefaultPermissionLevel = v;
+                    Util::toLower(v);
+                    if (v == "member")
+                        this->mDefaultPermissionLevel = PlayerPermissionLevel::Member;
+                    if (v == "operator")
+                        this->mDefaultPermissionLevel = PlayerPermissionLevel::Operator;
+
+                    this->mDefaultPermissionLevel = PlayerPermissionLevel::Visitor;
                 }
             },
         };
@@ -163,63 +188,9 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
             it->second(value);
         }
         else {
-            this->m_CustomProperties[key] = value;
+            this->mCustomProperties[key] = value;
         };
     };
 
-    this->m_IsLoaded = true;
-};
-
-int PropertiesSettings::getDefaultPlayerPermissionLevel() const
-{
-    if (this->m_DefaultPermissionLevel == "operator")
-        return 2;
-    else if (this->m_DefaultPermissionLevel == "visitor")
-        return 1;
-
-    return 0;
-};
-
-int PropertiesSettings::getOpPermissionLevel() const
-{
-    if (this->m_OpPermissionLevel <= 4)
-        return this->m_OpPermissionLevel;
-
-    return 1;
-};
-
-GameType PropertiesSettings::getGameMode() const
-{
-    if (this->m_GameMode == "creative" || this->m_GameMode == "1" || this->m_GameMode == "c")
-        return GameType::Creative;
-
-    else if (this->m_GameMode == "adventure" || this->m_GameMode == "2" || this->m_GameMode == "a")
-        return GameType::Adventure;
-    
-    else if (this->m_GameMode == "spectator")
-        return GameType::Spectator;
-
-    return GameType::Survival;
-};
-
-Difficulty PropertiesSettings::getDifficulty() const
-{
-    if (this->m_Difficulty == "peaceful" || this->m_Difficulty == "0")
-        return Difficulty::Peaceful;
-
-    else if (this->m_Difficulty == "normal" || this->m_Difficulty == "2")
-        return Difficulty::Normal;
-    
-    else if (this->m_Difficulty == "hard" || this->m_Difficulty == "3")
-        return Difficulty::Hard;
-    
-    return Difficulty::Easy;
-};
-
-
-PlayerTickPolicy PropertiesSettings::getPlayerTickPolicy() const {
-    if (this->m_PlayerTickPolicy == "throttled")
-        return PlayerTickPolicy::THROTTLED;
-
-    return PlayerTickPolicy::GREEDY;
+    this->mIsLoaded = true;
 };

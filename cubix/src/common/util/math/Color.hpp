@@ -15,11 +15,11 @@ namespace Util
         float r, g, b, a;
 
     public:
-        Color(
-            float red = 0,
-            float green = 0,
-            float blue = 0,
-            float alpha = 0
+        explicit Color(
+            const float red = 0,
+            const float green = 0,
+            const float blue = 0,
+            const float alpha = 0
         ) : r(red), g(green), b(blue), a(alpha) {};
 
         uint32_t encode() const;

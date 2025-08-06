@@ -6,7 +6,7 @@
 #include "NetworkServer.hpp"
 #include "NetworkIdentifier.hpp"
 
-class NetherNetServer : public NetworkServer
+class NetherNetServer final : public NetworkServer
 {
 public:
 
