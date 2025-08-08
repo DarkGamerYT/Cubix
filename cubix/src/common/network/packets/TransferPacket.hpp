@@ -5,7 +5,7 @@ class TransferPacket final : public Packet
 {
 public:
     std::string address;
-    unsigned short port;
+    uint16_t port;
     bool reloadWorld;
 
 public:

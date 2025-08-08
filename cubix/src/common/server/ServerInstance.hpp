@@ -12,8 +12,8 @@
 
 #include "../util/Logger.hpp"
 
-#include "../network/ConnectionDefinition.hpp"
-#include "../network/ServerNetworkHandler.hpp"
+#include "../network/server/ConnectionDefinition.hpp"
+#include "../network/server/ServerNetworkHandler.hpp"
 
 #include "PlayerTickPolicy.hpp"
 #include "ServerLevel.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
 
-#include "../CompressionType.hpp"
+#include "../connection/CompressionType.hpp"
 
 class NetworkSettingsPacket final : public Packet
 {

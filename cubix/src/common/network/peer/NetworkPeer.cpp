@@ -1,5 +1,9 @@
 #include "NetworkPeer.hpp"
-#include "NetworkServer.hpp"
+
+#include <zlib/zlib.h>
+#include <snappy/snappy.h>
+
+#include "../transport/NetworkServer.hpp"
 
 BinaryStream& NetworkPeer::receivePacket(BinaryStream& stream) const {
     CompressionType compressionType = this->mCompression;
@@ -167,7 +171,5 @@ void NetworkPeer::sendStream(const BinaryStream& dataStream, const NetworkPeer::
         };
     };
 
-    /*Logger::log(Logger::LogLevel::Debug,
-        "Target: {} - {}: {}", static_cast<uint8_t>(subClientId), packet.getName(), packetStream.toString());*/
     this->mNetworkServer->sendPacket(this->mNetworkIdentifier, packetStream, reliability);
 };

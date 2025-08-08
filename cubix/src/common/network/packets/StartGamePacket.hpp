@@ -28,8 +28,8 @@ struct NetworkPermissions
 class StartGamePacket final : public Packet
 {
 public:
-    int64_t targetActorId;
-    int64_t targetRuntimeId;
+    int64_t targetUniqueId;
+    uint64_t targetRuntimeId;
     GameType actorGameType;
     Vec3 position;
     Vec2 rotation;

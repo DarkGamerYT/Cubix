@@ -6,11 +6,11 @@
 
 #include <rapidjson/document.h>
 
-#include "../util/math/Color.hpp"
-#include "../util/StringUtils.hpp"
-#include "../util/Base64.hpp"
-#include "../util/Logger.hpp"
-#include "../util/UUID.hpp"
+#include "../../util/math/Color.hpp"
+#include "../../util/StringUtils.hpp"
+#include "../../util/Base64.hpp"
+#include "../../util/Logger.hpp"
+#include "../../util/UUID.hpp"
 
 class ConnectionRequest
 {

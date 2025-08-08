@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "PortPair.hpp"
+#include "../transport/PortPair.hpp"
 
 struct ConnectionDefinition {
     std::string serverName;

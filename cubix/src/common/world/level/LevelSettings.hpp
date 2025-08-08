@@ -7,7 +7,7 @@
 #include "../../util/BinaryStream.hpp"
 
 #include "../../editor/WorldType.hpp"
-#include "../../network/GamePublishSetting.hpp"
+#include "../../network/server/GamePublishSetting.hpp"
 #include "../../server/ChatRestrictionLevel.hpp"
 #include "../../server/commands/types/PlayerPermissionLevel.hpp"
 

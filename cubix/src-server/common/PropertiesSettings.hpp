@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <string_view>
 
-#include "../../src/common/network/CompressionType.hpp"
-#include "../../src/common/network/TransportLayer.hpp"
+#include "../../src/common/network/connection/CompressionType.hpp"
+#include "../../src/common/network/transport/TransportLayer.hpp"
 #include "../../src/common/server/ChatRestrictionLevel.hpp"
 #include "../../src/common/world/GameMode.hpp"
 #include "../../src/common/world/Difficulty.hpp"

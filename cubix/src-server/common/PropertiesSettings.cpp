@@ -175,10 +175,10 @@ PropertiesSettings::PropertiesSettings(const std::string& name)
                     Util::toLower(v);
                     if (v == "member")
                         this->mDefaultPermissionLevel = PlayerPermissionLevel::Member;
-                    if (v == "operator")
+                    else if (v == "operator")
                         this->mDefaultPermissionLevel = PlayerPermissionLevel::Operator;
 
-                    this->mDefaultPermissionLevel = PlayerPermissionLevel::Visitor;
+                    else this->mDefaultPermissionLevel = PlayerPermissionLevel::Visitor;
                 }
             },
         };

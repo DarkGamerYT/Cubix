@@ -31,8 +31,8 @@ void BinaryStream::serialize<LevelSettings>::write(const LevelSettings& value, B
     stream.writeSignedVarInt(value.mEducationEditionOffer);
     stream.writeBoolean(value.mEducationFeaturesEnabled);
     stream.writeString<Endianness::NetworkEndian>(value.mEducationProductID);
-    stream.writeUnsignedInt(static_cast<uint32_t>(value.mRainLevel));
-    stream.writeUnsignedInt(static_cast<uint32_t>(value.mLightningLevel));
+    stream.write<float>(value.mRainLevel);
+    stream.write<float>(value.mLightningLevel);
 
     stream.writeBoolean(value.mPlatformLockedContent);
     stream.writeBoolean(value.mMultiplayerGameIntent);
@@ -69,7 +69,7 @@ void BinaryStream::serialize<LevelSettings>::write(const LevelSettings& value, B
             };
             case GameRuleType::Float: {
                 const auto gameRule = dynamic_cast<const GameRule<float>*>(rule.get());
-                stream.writeUnsignedInt(static_cast<uint32_t>(gameRule->getValue()));
+                stream.write<float>(gameRule->getValue());
                 break;
             };
             default:

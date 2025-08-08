@@ -20,7 +20,7 @@ void GameRulesChangedPacket::read(BinaryStream& stream)
                 break;
             };
             case GameRuleType::Float: {
-                GameRule gameRule{ name, static_cast<float>(stream.readUnsignedInt()), canBeModifiedByPlayer };
+                GameRule gameRule{ name, stream.read<float>(), canBeModifiedByPlayer };
                 this->rules.emplace_back(gameRule.clone());
                 break;
             };
@@ -55,7 +55,7 @@ void GameRulesChangedPacket::write(BinaryStream& stream)
             };
             case GameRuleType::Float: {
                 const auto gameRule = dynamic_cast<const GameRule<float>*>(rule.get());
-                stream.writeUnsignedInt(static_cast<uint32_t>(gameRule->getValue()));
+                stream.write<float>(gameRule->getValue());
                 break;
             };
             default:

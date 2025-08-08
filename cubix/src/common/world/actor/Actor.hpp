@@ -16,6 +16,7 @@ public:
     virtual ~Actor() = default;
 
     const Vec3& getPosition() const { return this->mPosition; };
+    const Vec3& getVelocity() const { return this->mVelocity; };
     ChunkPos getChunkPos() const {
         return {
             static_cast<int>(this->mPosition.x) >> 4,

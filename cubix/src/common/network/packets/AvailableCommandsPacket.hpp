@@ -13,6 +13,7 @@ public:
     void write(BinaryStream& stream) override;
 
 private:
-    void writeCommands(BinaryStream&);
-    void writeParameters(BinaryStream&, const std::vector<CommandParameter>&);
+    void writeCommands(BinaryStream&) const;
+
+    static void writeParameters(BinaryStream&, const std::vector<CommandParameter>&);
 };

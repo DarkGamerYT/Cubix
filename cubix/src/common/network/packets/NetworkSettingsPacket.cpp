@@ -5,7 +5,7 @@ void NetworkSettingsPacket::read(BinaryStream& stream)
     this->compressionAlgorithm = static_cast<CompressionType>(static_cast<uint8_t>(stream.readUnsignedShort()));
     this->clientThrottle = stream.readBoolean();
     this->clientThrottleThreshold = stream.readByte();
-    this->clientThrottleScalar = static_cast<float>(stream.readUnsignedInt());
+    this->clientThrottleScalar = stream.read<float>();
 };
 
 void NetworkSettingsPacket::write(BinaryStream& stream)
@@ -17,5 +17,5 @@ void NetworkSettingsPacket::write(BinaryStream& stream)
     stream.writeUnsignedShort(static_cast<uint16_t>(this->compressionAlgorithm));
     stream.writeBoolean(this->clientThrottle);
     stream.writeByte(this->clientThrottleThreshold);
-    stream.writeUnsignedInt(static_cast<uint32_t>(this->clientThrottleScalar));
+    stream.write<float>(this->clientThrottleScalar);
 };

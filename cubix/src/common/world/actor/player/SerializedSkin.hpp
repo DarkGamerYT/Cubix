@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include "../../../network/ConnectionRequest.hpp"
+#include "../../../network/connection/ConnectionRequest.hpp"
 #include "../../../util/BinaryStream.hpp"
 #include "../../../util/math/Color.hpp"
 #include "../../../util/Image.hpp"

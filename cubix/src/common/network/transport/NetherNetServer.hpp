@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "NetworkServer.hpp"
-#include "NetworkIdentifier.hpp"
+#include "../peer/NetworkIdentifier.hpp"
 
 class NetherNetServer final : public NetworkServer
 {

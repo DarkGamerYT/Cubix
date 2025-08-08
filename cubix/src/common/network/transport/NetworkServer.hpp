@@ -7,15 +7,15 @@
 #include <string>
 
 #include "PortPair.hpp"
-#include "Packet.hpp"
-#include "NetworkPeer.hpp"
-#include "NetworkIdentifier.hpp"
-#include "../util/BinaryStream.hpp"
-#include "../AppPlatform.hpp"
-#include "../SharedConstants.hpp"
-#include "../world/GameMode.hpp"
-#include "../util/Logger.hpp"
-#include "packets/DisconnectPacket.hpp"
+#include "../Packet.hpp"
+#include "../peer/NetworkPeer.hpp"
+#include "../peer/NetworkIdentifier.hpp"
+#include "../../util/BinaryStream.hpp"
+#include "../../AppPlatform.hpp"
+#include "../../SharedConstants.hpp"
+#include "../../world/GameMode.hpp"
+#include "../../util/Logger.hpp"
+#include "../packets/DisconnectPacket.hpp"
 
 class ServerNetworkHandler;
 class NetworkServer

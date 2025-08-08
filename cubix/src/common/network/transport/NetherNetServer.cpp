@@ -1,5 +1,5 @@
 #include "NetherNetServer.hpp"
-#include "ServerNetworkHandler.hpp"
+#include "../server/ServerNetworkHandler.hpp"
 NetherNetServer::NetherNetServer(ServerNetworkHandler* networkHandler)
 {
     this->mNetwork = networkHandler;

@@ -1,14 +1,11 @@
 #ifndef NETWORKPEER_HPP
 #define NETWORKPEER_HPP
 
-#include <zlib/zlib.h>
-#include <snappy/snappy.h>
-
-#include "CompressionType.hpp"
-#include "Packet.hpp"
+#include "../connection/CompressionType.hpp"
+#include "../Packet.hpp"
 #include "NetworkIdentifier.hpp"
 
-#include "../util/BinaryStream.hpp"
+#include "../../util/BinaryStream.hpp"
 
 template<typename T>
 concept IsNetworkPacket = std::is_base_of_v<Packet, std::decay_t<T>>;
@@ -53,7 +50,7 @@ public:
             BinaryStream binaryStream{};
 
             uint16_t packetHeader = 0;
-            const uint16_t packetId = static_cast<uint16_t>(packet.getId());
+            const auto packetId = static_cast<uint16_t>(packet.getId());
 
             packetHeader |= (packetId & 0x03FF); // Packet ID (10 bits)
             packetHeader |= (static_cast<uint16_t>(subClientSenderId & 0x03) << 10); // Sender ID (2 bits)
@@ -66,6 +63,10 @@ public:
 
             dataStream.writeUnsignedVarInt(binaryStream.size());
             dataStream.writeBytes(binaryStream.data(), binaryStream.size());
+
+
+            /*Logger::log(Logger::LogLevel::Debug,
+                "Target: {} - {}: {}", static_cast<uint8_t>(subClientId), packet.getName(), binaryStream.toString());*/
         };
 
         (writePacket(args), ...);

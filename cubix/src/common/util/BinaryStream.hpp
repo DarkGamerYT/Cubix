@@ -25,13 +25,23 @@ public:
     size_t mReadPos = 0;
 
     template <typename T>
+        struct serializeTraits {
+        using readType  = T;
+        using writeType = const T&;
+    };
+
+    template <typename T>
     struct serialize {
-        static T read(BinaryStream& stream) {
+        using traits = serializeTraits<T>;
+        using readType  = typename traits::readType;
+        using writeType = typename traits::writeType;
+
+        static readType read(BinaryStream& stream) {
             static_assert(sizeof(T) == -1, "BinaryStream::serialize<T> not implemented for this type");
             return nullptr;
         };
 
-        static void write(const T& value, BinaryStream& stream) {
+        static void write(writeType value, BinaryStream& stream) {
             static_assert(sizeof(T) == -1, "BinaryStream::serialize<T> not implemented for this type");
         };
     };
@@ -97,7 +107,7 @@ public:
             if (i == 4 && (toRead & 0x80))
                 throw std::runtime_error("Malformed VarInt: too many bytes");
 
-            value |= ((toRead & 0x7f) <<  shift);
+            value |= ((toRead & 0x7f) << shift);
             if ((toRead & 0x80) == 0)
                 return value;
 
@@ -128,7 +138,7 @@ public:
     };
 
     template<Endianness E = Endianness::LittleEndian>
-    unsigned short readUnsignedShort() {
+    uint16_t readUnsignedShort() {
         auto value = this->read<unsigned short>();
         if constexpr (E == Endianness::BigEndian)
             value = std::byteswap(value);
@@ -137,9 +147,9 @@ public:
     };
 
     template<Endianness E = Endianness::LittleEndian>
-    short readShort() {
-        const unsigned short raw = this->readUnsignedShort<E>();
-        return static_cast<short>(raw);
+    int16_t readShort() {
+        const uint16_t raw = this->readUnsignedShort<E>();
+        return static_cast<int16_t>(raw);
     };
 
     uint64_t readUnsignedVarLong() {
@@ -199,8 +209,8 @@ public:
     };
 
     Util::UUID readUUID() {
-        uint64_t mostSignificantBits = this->readUnsignedLong();
-        uint64_t leastSignificantBits = this->readUnsignedLong();
+        const uint64_t mostSignificantBits = this->readUnsignedLong();
+        const uint64_t leastSignificantBits = this->readUnsignedLong();
 
         return Util::UUID{ mostSignificantBits, leastSignificantBits };
     };
@@ -302,15 +312,15 @@ public:
     };
 
     template<Endianness E = Endianness::LittleEndian>
-    void writeUnsignedShort(unsigned short value) {
+    void writeUnsignedShort(uint16_t value) {
         if constexpr (E == Endianness::BigEndian)
             value = std::byteswap(value);
 
-        this->write<unsigned short>(value);
+        this->write<uint16_t>(value);
     };
 
     template<Endianness E = Endianness::LittleEndian>
-    void writeShort(const short value) {
+    void writeShort(const int16_t value) {
         this->writeUnsignedShort<E>(value);
     };
 
@@ -372,9 +382,9 @@ public:
         this->writeSignedVarInt(z);
     };
     void writeNetworkBlockPosition(const BlockPos& pos) {
-        this->writeSignedVarInt(static_cast<int32_t>(pos.x));
+        this->writeSignedVarInt(pos.x);
         this->writeUnsignedVarInt(static_cast<uint32_t>(pos.y));
-        this->writeSignedVarInt(static_cast<int32_t>(pos.z));
+        this->writeSignedVarInt(pos.z);
     };
 
     void writeBlockPosition(const int x, const int y, const int z) {
@@ -383,9 +393,9 @@ public:
         this->writeSignedVarInt(z);
     };
     void writeBlockPosition(const BlockPos& pos) {
-        this->writeSignedVarInt(static_cast<int32_t>(pos.x));
-        this->writeSignedVarInt(static_cast<int32_t>(pos.y));
-        this->writeSignedVarInt(static_cast<int32_t>(pos.z));
+        this->writeSignedVarInt(pos.x);
+        this->writeSignedVarInt(pos.y);
+        this->writeSignedVarInt(pos.z);
     };
 
     void writeChunkPos(const int x, int const z) {

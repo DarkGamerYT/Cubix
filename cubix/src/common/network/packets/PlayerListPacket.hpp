@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "../Packet.hpp"
-#include "../../world/actor/player/Player.hpp"
+#include "../../server/ServerPlayer.hpp"
 
 class PlayerListPacket final : public Packet
 {
@@ -13,7 +13,7 @@ public:
     };
 
     Action action;
-    std::vector<std::shared_ptr<Player>> players;
+    std::vector<std::shared_ptr<ServerPlayer>> players;
 
 public:
     PlayerListPacket()

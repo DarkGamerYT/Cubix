@@ -6,9 +6,10 @@ void AvailableCommandsPacket::read(BinaryStream& stream)
 
 void AvailableCommandsPacket::write(BinaryStream& stream)
 {
-    const std::vector<std::string>& enumValues = CommandRegistry::getAllEnumValues();
     { // Enum values
+        const std::vector<std::string>& enumValues = CommandRegistry::getAllEnumValues();
         stream.writeUnsignedVarInt(static_cast<uint32_t>(enumValues.size()));
+
         for (const std::string& value : enumValues)
         {
             stream.writeString<Endianness::NetworkEndian>(value);
@@ -19,16 +20,16 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
 
     { // Post fixes
         const std::vector<std::string>& postFixes = CommandRegistry::getPostFixes();
-
         stream.writeUnsignedVarInt(static_cast<uint32_t>(postFixes.size()));
+
         for (const std::string& value : postFixes)
         {
             stream.writeString<Endianness::NetworkEndian>(value);
         };
     };
 
-    const auto& enums = CommandRegistry::getEnums();
     { // Enum data
+        const auto& enums = CommandRegistry::getEnums();
         stream.writeUnsignedVarInt(static_cast<uint32_t>(enums.size()));
 
         for (const auto& name : enums)
@@ -62,9 +63,10 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
     this->writeCommands(stream); // Commands data
 
     const std::vector<std::string>& softEnumVales = CommandRegistry::getAllSoftEnumValues();
-    const auto& softEnums = CommandRegistry::getSoftEnums();
     { // Soft Enums
+        const auto& softEnums = CommandRegistry::getSoftEnums();
         stream.writeUnsignedVarInt(static_cast<uint32_t>(softEnums.size()));
+
         for (const auto& name : softEnums)
         {
             const auto& indexes = CommandRegistry::getSoftEnumValues(name);
@@ -81,8 +83,7 @@ void AvailableCommandsPacket::write(BinaryStream& stream)
     stream.writeUnsignedVarInt(0); // Constraints
 };
 
-void AvailableCommandsPacket::writeCommands(BinaryStream& stream)
-{
+void AvailableCommandsPacket::writeCommands(BinaryStream& stream) const {
     const auto& commands = CommandRegistry::getAll();
 
     stream.writeUnsignedVarInt(static_cast<uint32_t>(commands.size()));

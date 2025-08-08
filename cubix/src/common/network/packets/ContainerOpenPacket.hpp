@@ -50,7 +50,7 @@ public:
     uint8_t containerId;
     ContainerType containerType;
     BlockPos position;
-    int64_t targetActorId;
+    int64_t actorUniqueId;
 
 public:
     ContainerOpenPacket()

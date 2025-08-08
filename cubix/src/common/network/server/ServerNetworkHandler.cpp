@@ -1,6 +1,7 @@
 #include "ServerNetworkHandler.hpp"
 
-#include "../server/ServerInstance.hpp"
+#include "../../server/ServerInstance.hpp"
+#include "../packets/MovePlayerPacket.hpp"
 
 inline AppPlatform g_AppPlatform;
 ServerNetworkHandler::ServerNetworkHandler(
@@ -50,8 +51,8 @@ std::vector<std::shared_ptr<NetworkPeer>> ServerNetworkHandler::getConnections()
 
     return peers;
 };
-std::vector<std::shared_ptr<Player>> ServerNetworkHandler::getPlayers() const {
-    std::vector<std::shared_ptr<Player>> players;
+std::vector<std::shared_ptr<ServerPlayer>> ServerNetworkHandler::getPlayers() const {
+    std::vector<std::shared_ptr<ServerPlayer>> players;
     for (const auto& client : this->mPlayers | std::views::values)
         for (const auto& player : client | std::views::values)
         {
@@ -118,10 +119,9 @@ void ServerNetworkHandler::onTickPlayers(uint32_t nTick) {
         for (const auto& client : this->mPlayers | std::views::values)
             for (const auto& player : client | std::views::values)
             {
-                if (player == nullptr)
+                if (player == nullptr || !player->isPlayerInitialized())
                     continue;
 
-                //player->tick();
             };
     }).detach();
 };
@@ -242,6 +242,15 @@ void ServerNetworkHandler::handle(
                 this->handle(networkIdentifier, gamePacket);
                 break;
             };
+            case MinecraftPacketIds::SetLocalPlayerAsInit:
+            {
+                SetLocalPlayerAsInitializedPacket gamePacket;
+                gamePacket.setSubClientId(subClientTargetId);
+                gamePacket.read(stream);
+
+                this->handle(networkIdentifier, gamePacket);
+                break;
+            };
             case MinecraftPacketIds::Interact:
             {
                 InteractPacket gamePacket;
@@ -305,9 +314,9 @@ void ServerNetworkHandler::handle(
                 this->handle(networkIdentifier, gamePacket);
                 break;
             };
-            case MinecraftPacketIds::MovePlayer:
+            case MinecraftPacketIds::PlayerAuthInputPacket:
             {
-                MovePlayerPacket gamePacket;
+                PlayerAuthInputPacket gamePacket;
                 gamePacket.setSubClientId(subClientTargetId);
                 gamePacket.read(stream);
 
@@ -316,6 +325,7 @@ void ServerNetworkHandler::handle(
             };
 
             default:
+                Logger::log(Logger::LogLevel::Warn, "Unhandled packet: {}", static_cast<uint16_t>(packetId));
                 break;
         };
     }
@@ -525,7 +535,7 @@ void ServerNetworkHandler::handle(
     auto& clients = this->mPlayers.at(networkIdentifier);
 
     clients.emplace(SubClientId::PrimaryClient,
-        std::make_shared<Player>(
+        std::make_shared<ServerPlayer>(
             this->mLevel,
             networkPeer, this,
             packet.connectionRequest, SubClientId::PrimaryClient));
@@ -638,7 +648,7 @@ void ServerNetworkHandler::handle(
     // Create a new player
     auto& clients = this->mPlayers.at(networkIdentifier);
     clients.insert_or_assign(subClientId,
-        std::make_shared<Player>(
+        std::make_shared<ServerPlayer>(
             this->mLevel,
             networkPeer, this,
             packet.connectionRequest, subClientId));
@@ -665,6 +675,7 @@ void ServerNetworkHandler::handle(
         return;
     };
 
+    // Initial spawn
     player->doInitialSpawn();
 };
 
@@ -675,7 +686,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -695,7 +706,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -709,7 +720,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -742,9 +753,34 @@ void ServerNetworkHandler::handle(
         case ResourcePackResponse::ResourcePackStackFinished:
         {
             player->doInitialSpawn();
-            player->tick();
+
+            // Item Registry
+            ItemRegistryPacket itemRegistry;
+            player->sendNetworkPacket(itemRegistry);
+
+            // Creative Content
+            CreativeContentPacket creativeContent;
+            player->sendNetworkPacket(creativeContent);
+
+            // All available commands
+            AvailableCommandsPacket availableCommands;
+            player->sendNetworkPacket(availableCommands);
         };
     };
+};
+
+void ServerNetworkHandler::handle(
+    NetworkIdentifier& networkIdentifier,
+    SetLocalPlayerAsInitializedPacket& packet
+) {
+    if (!this->mPlayers.contains(networkIdentifier))
+        return;
+
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    if (player == nullptr)
+        return;
+
+    player->markPlayerAsInitialized();
 };
 
 void ServerNetworkHandler::handle(
@@ -754,7 +790,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -779,7 +815,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -802,7 +838,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -816,7 +852,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -839,7 +875,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -873,7 +909,7 @@ void ServerNetworkHandler::handle(
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 
@@ -905,12 +941,12 @@ void ServerNetworkHandler::handle(
 
 void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
-    MovePlayerPacket& packet
+    PlayerAuthInputPacket& packet
 ) {
     if (!this->mPlayers.contains(networkIdentifier))
         return;
 
-    const std::shared_ptr<Player>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
     if (player == nullptr)
         return;
 

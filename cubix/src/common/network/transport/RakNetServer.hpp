@@ -3,13 +3,13 @@
 
 #include <memory>
 
-#include "../../../src-deps/RakNet/Source/DS_Map.h"
-#include "../../../src-deps/RakNet/Source/MessageIdentifiers.h"
-#include "../../../src-deps/RakNet/Source/RakPeer.h"
-#include "../../../src-deps/RakNet/Source/RakPeerInterface.h"
+#include "../../../../src-deps/RakNet/Source/DS_Map.h"
+#include "../../../../src-deps/RakNet/Source/MessageIdentifiers.h"
+#include "../../../../src-deps/RakNet/Source/RakPeer.h"
+#include "../../../../src-deps/RakNet/Source/RakPeerInterface.h"
 
 #include "NetworkServer.hpp"
-#include "NetworkIdentifier.hpp"
+#include "../peer/NetworkIdentifier.hpp"
 
 class RakNetServer final : public NetworkServer
 {

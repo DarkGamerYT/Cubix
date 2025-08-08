@@ -23,13 +23,13 @@ enum class TeleportationCause {
 class MovePlayerPacket final : public Packet
 {
 public:
-    int64_t actorRuntimeId;
+    uint64_t actorRuntimeId;
     Vec3 position;
     Vec2 rotation;
     float yHeadRotation;
     PositionMode positionMode;
     bool isOnGround;
-    int64_t ridingRuntimeId;
+    uint64_t ridingRuntimeId;
     TeleportationCause teleportCause = TeleportationCause::Unknown;
     ActorType sourceActorType = ActorType::Player;
     uint64_t tick;

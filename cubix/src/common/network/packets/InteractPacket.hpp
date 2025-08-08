@@ -15,7 +15,7 @@ public:
     };
 
     Action action;
-    int64_t targetRuntimeId;
+    uint64_t actorRuntimeId;
     Vec3 position;
 
 public:

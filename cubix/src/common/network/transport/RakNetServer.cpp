@@ -1,5 +1,5 @@
 #include "RakNetServer.hpp"
-#include "ServerNetworkHandler.hpp"
+#include "../server/ServerNetworkHandler.hpp"
 RakNetServer::RakNetServer(ServerNetworkHandler* networkHandler)
 {
     this->p_mPeerInterface = RakNet::RakPeerInterface::GetInstance();
@@ -102,11 +102,12 @@ void RakNetServer::disconnectClient(
 void RakNetServer::update()
 {
     std::lock_guard<std::mutex> lock(this->mPeerMutex);
-    if (this->p_mPeerInterface == nullptr)
+    RakNet::RakPeerInterface* peer = this->p_mPeerInterface;
+    if (peer == nullptr)
         return;
 
     RakNet::Packet* packet = nullptr;
-    while ((packet = this->p_mPeerInterface->Receive()) != nullptr)
+    while ((packet = peer->Receive()) != nullptr)
     {
         const uint8_t packetId = packet->data[0];
         NetworkIdentifier networkIdentifier(packet->guid);
@@ -115,7 +116,7 @@ void RakNetServer::update()
             // Minecraft Packets
             case 0xFE:
             {
-                if (this->p_mPeerInterface->GetConnectionState(networkIdentifier.mGuid) != RakNet::ConnectionState::IS_CONNECTED)
+                if (peer->GetConnectionState(networkIdentifier.mGuid) != RakNet::ConnectionState::IS_CONNECTED)
                     return;
 
                 const auto& connections = this->mNetwork->getConnections();
@@ -234,7 +235,7 @@ void RakNetServer::update()
                 break;
         };
 
-        this->p_mPeerInterface->DeallocatePacket(packet);
+        peer->DeallocatePacket(packet);
     };
 };
 

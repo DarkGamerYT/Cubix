@@ -1,6 +1,6 @@
 #pragma once
 #include "../Packet.hpp"
-#include "../ConnectionRequest.hpp"
+#include "../connection/ConnectionRequest.hpp"
 
 class LoginPacket final : public Packet
 {
