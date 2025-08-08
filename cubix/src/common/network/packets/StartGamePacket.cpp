@@ -102,6 +102,6 @@ void StartGamePacket::write(BinaryStream& stream)
     stream.writeUUID(this->worldTemplateId);
     stream.writeBoolean(this->clientSideGeneration);
     stream.writeBoolean(this->blockNetworkIdsAreHashes);
-
+    stream.writeBoolean(this->tickDeathSystemsEnabled);
     stream.writeBoolean(this->networkPermissions.serverAuthSoundEnabled);
 };

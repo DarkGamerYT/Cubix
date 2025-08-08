@@ -155,7 +155,8 @@ enum class ActorType {
     Bogged                     = 144 | SkeletonMonster,
     OminousItemSpawner         = 145,
     Creaking                   = 146 | Monster,
-    HappyGhast                 = 147 | Animal
+    HappyGhast                 = 147 | Animal,
+    CopperGolem                = 148 | PathfinderMob
 };
 
 #endif //ACTORTYPE_HPP

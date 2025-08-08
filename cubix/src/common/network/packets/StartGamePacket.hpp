@@ -49,6 +49,7 @@ public:
     Util::UUID worldTemplateId;
     bool clientSideGeneration;
     bool blockNetworkIdsAreHashes;
+    bool tickDeathSystemsEnabled;
     NetworkPermissions networkPermissions;
 
 public:
