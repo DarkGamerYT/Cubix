@@ -160,7 +160,7 @@ void ServerPlayer::tick() {
     {
         using difference = std::vector<unsigned char>::difference_type;
         const auto start = chunkPackets.begin() + static_cast<difference>(i);
-        const auto end = std::next(start, min(batchSize, chunkPackets.size() - i));
+        const auto end = std::next(start, std::min(batchSize, chunkPackets.size() - i));
 
         std::vector batch(start, end);
 

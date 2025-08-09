@@ -2,6 +2,7 @@
 #define MARSAGLIAPOLARGAUSSIAN_HPP
 
 #include <functional>
+#include <cmath>
 
 class MarsagliaPolarGaussian {
 private:

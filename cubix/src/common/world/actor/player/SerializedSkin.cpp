@@ -40,7 +40,7 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
         for (const auto& tintColor : tintColors)
         {
             if (!tintColor.IsObject())
-                throw std::exception("Expected tint color to be an object");
+                throw std::runtime_error("Expected tint color to be an object");
 
             const auto& colors = Json::getArray(tintColor, "Colors");
 
@@ -48,7 +48,7 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
             for (size_t i = 0; i < colors.Capacity(); ++i)
             {
                 if (!colors[i].IsString())
-                    throw std::exception("Json: Expected a string value");
+                    throw std::runtime_error("Json: Expected a string value");
 
                 colorMap[i] = Util::Color::fromHexString(colors[i].GetString());
             };
@@ -64,7 +64,7 @@ SerializedSkin::SerializedSkin(const std::unique_ptr<ConnectionRequest>& request
         for (const auto& animatedImage : animatedImages)
         {
             if (!animatedImage.IsObject())
-                throw std::exception("Expected animated image to be an object");
+                throw std::runtime_error("Expected animated image to be an object");
 
             Util::Image image{};
             {
@@ -107,7 +107,7 @@ void SerializedSkin::read(BinaryStream& stream) {
     this->mPlayFabId = stream.readString<Endianness::NetworkEndian>();
     this->mResourcePatch.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
     if (this->mResourcePatch.HasParseError())
-        throw std::exception("Invalid resource patch");
+        throw std::runtime_error("Invalid resource patch");
 
     {
         this->mSkinImage.width = stream.readUnsignedInt();
@@ -148,7 +148,7 @@ void SerializedSkin::read(BinaryStream& stream) {
 
     this->mGeometryData.Parse(stream.readString<Endianness::NetworkEndian>().c_str());
     if (this->mGeometryData.HasParseError())
-        throw std::exception("Invalid geometry data");
+        throw std::runtime_error("Invalid geometry data");
 
     this->mGeometryMinEngineVersion = stream.readString<Endianness::NetworkEndian>();
     this->mAnimationData = stream.readString<Endianness::NetworkEndian>();

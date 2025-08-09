@@ -11,6 +11,7 @@ if (POLICY CMP0141)
 endif()
 
 if(MSVC)
+    add_definitions(-DNOMINMAX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus /Zc:preprocessor")
 endif()
 
@@ -104,7 +105,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/common")
 
 if (WIN32)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/win")
-elseif (UNIX AND NOT APPLE)
+elseif (UNIX)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/linux")
 endif()
 
@@ -113,6 +114,6 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/common")
 
 if (WIN32)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/win")
-elseif (UNIX AND NOT APPLE)
+elseif (UNIX)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/linux")
 endif()

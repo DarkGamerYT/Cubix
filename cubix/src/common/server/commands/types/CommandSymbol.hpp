@@ -16,7 +16,7 @@ constexpr int operator|(const int lhs, CommandSymbolBit rhs) {
 };
 
 enum class CommandSymbol : int {
-    Epsilon                   = CommandSymbolBit::NonTerminalBit,
+    Epsilon                   = static_cast<int>(CommandSymbolBit::NonTerminalBit),
     Int                       = 0x01 | CommandSymbolBit::NonTerminalBit,
     Float                     = 0x02 | CommandSymbolBit::NonTerminalBit,
     Val                       = 0x03 | CommandSymbolBit::NonTerminalBit,

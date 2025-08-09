@@ -119,24 +119,24 @@ void BlockRegistry::hashBlockStates(Block& block)
 };
 
 // Blocks
-Block BlockRegistry::PALE_OAK_PLANKS = { "minecraft:pale_oak_planks", -996 };
-Block BlockRegistry::DARK_OAK_PLANKS = { "minecraft:dark_oak_planks", -743 };
-Block BlockRegistry::ACACIA_PLANKS = { "minecraft:acacia_planks", -742 };
-Block BlockRegistry::JUNGLE_PLANKS = { "minecraft:jungle_planks", -741 };
-Block BlockRegistry::BIRCH_PLANKS = { "minecraft:birch_planks", -740 };
-Block BlockRegistry::SPRUCE_PLANKS = { "minecraft:spruce_planks", -739 };
-Block BlockRegistry::CHERRY_PLANKS = { "minecraft:cherry_planks", -537 };
-Block BlockRegistry::BAMBOO_PLANKS = { "minecraft:bamboo_planks", -510 };
-Block BlockRegistry::BAMBOO_MOSAIC = { "minecraft:bamboo_mosaic", -509 };
-Block BlockRegistry::MANGROVE_PLANKS = { "minecraft:mangrove_planks", -486 };
-Block BlockRegistry::WARPED_PLANKS = { "minecraft:warped_planks", -243 };
-Block BlockRegistry::CRIMSON_PLANKS = { "minecraft:crimson_planks", -242 };
+Block BlockRegistry::PALE_OAK_PLANKS { "minecraft:pale_oak_planks", -996 };
+Block BlockRegistry::DARK_OAK_PLANKS { "minecraft:dark_oak_planks", -743 };
+Block BlockRegistry::ACACIA_PLANKS { "minecraft:acacia_planks", -742 };
+Block BlockRegistry::JUNGLE_PLANKS { "minecraft:jungle_planks", -741 };
+Block BlockRegistry::BIRCH_PLANKS { "minecraft:birch_planks", -740 };
+Block BlockRegistry::SPRUCE_PLANKS { "minecraft:spruce_planks", -739 };
+Block BlockRegistry::CHERRY_PLANKS { "minecraft:cherry_planks", -537 };
+Block BlockRegistry::BAMBOO_PLANKS { "minecraft:bamboo_planks", -510 };
+Block BlockRegistry::BAMBOO_MOSAIC { "minecraft:bamboo_mosaic", -509 };
+Block BlockRegistry::MANGROVE_PLANKS { "minecraft:mangrove_planks", -486 };
+Block BlockRegistry::WARPED_PLANKS { "minecraft:warped_planks", -243 };
+Block BlockRegistry::CRIMSON_PLANKS { "minecraft:crimson_planks", -242 };
 
-Block BlockRegistry::AIR = { "minecraft:air", -158 };
+Block BlockRegistry::AIR { "minecraft:air", -158 };
 
-Block BlockRegistry::STONE = { "minecraft:stone", 1 };
-Block BlockRegistry::GRASS_BLOCK = { "minecraft:grass_block", 2 };
-Block BlockRegistry::DIRT = { "minecraft:dirt", 3 };
-Block BlockRegistry::COBBLESTONE = { "minecraft:cobblestone", 4 };
-Block BlockRegistry::OAK_PLANKS = { "minecraft:oak_planks", 5 };
+Block BlockRegistry::STONE { "minecraft:stone", 1 };
+Block BlockRegistry::GRASS_BLOCK { "minecraft:grass_block", 2 };
+Block BlockRegistry::DIRT { "minecraft:dirt", 3 };
+Block BlockRegistry::COBBLESTONE { "minecraft:cobblestone", 4 };
+Block BlockRegistry::OAK_PLANKS { "minecraft:oak_planks", 5 };
 Block BlockRegistry::OAK_LOG = LogBlock{ "minecraft:oak_log", 17 };

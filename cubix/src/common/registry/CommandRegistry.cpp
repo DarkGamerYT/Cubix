@@ -86,4 +86,4 @@ void CommandRegistry::setSoftEnumValues(const std::string& name, const std::vect
     sSoftEnumLookup[name] = indexes;
 };
 
-std::vector<std::string> CommandRegistry::GAMEMODES = { "survival", "s", "creative", "c", "adventure", "a", "spectator" };
+std::vector<std::string> CommandRegistry::GAMEMODES { "survival", "s", "creative", "c", "adventure", "a", "spectator" };

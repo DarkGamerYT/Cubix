@@ -2,10 +2,10 @@
 
 void ItemRegistry::initialize()
 {
-    ItemRegistry::registerItem(AIR);
+    ItemRegistry::registerItem(AIR.setMaxStackSize(255));
 
     ItemRegistry::registerItem(ACACIA_BOAT);
-    ItemRegistry::registerItem(GLOW_BERRIES);
+    ItemRegistry::registerItem(GLOW_BERRIES.setVersion(ItemVersion::Legacy));
 };
 
 std::vector<Item> ItemRegistry::getAll() {
@@ -26,9 +26,3 @@ void ItemRegistry::updateNetworkIdCounter()
     const auto& [ identifier, item ] = ItemRegistry::sItems.back();
     itemNetIdCounter = item.getNetworkId();
 };
-
-// Items
-Item ItemRegistry::AIR = Item{ "minecraft:air", -158 }.setMaxStackSize(255);
-
-Item ItemRegistry::ACACIA_BOAT = { "minecraft:acacia_boat", 405 };
-Item ItemRegistry::GLOW_BERRIES = Item{ "minecraft:glow_berries", 796 }.setVersion(ItemVersion::Legacy);

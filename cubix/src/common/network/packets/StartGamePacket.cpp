@@ -57,7 +57,7 @@ void StartGamePacket::write(BinaryStream& stream)
                 stateTag.add("name", Nbt::StringTag(key));
 
                 Nbt::ListTag states;
-                for (StateType& state : value.getPossibleStates())
+                for (const StateType& state : value.getPossibleStates())
                 {
                     switch (value.type())
                     {

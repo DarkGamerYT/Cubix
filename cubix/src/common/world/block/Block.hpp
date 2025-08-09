@@ -40,7 +40,7 @@ public:
 
     Block& setBlockItem(Item& item);
 
-    void setState(BlockState& state) { this->mStates.emplace(state.identifier(), state); };
+    void setState(const BlockState& state) { this->mStates.emplace(state.identifier(), state); };
 
 
     static int32_t hash(const Block&);

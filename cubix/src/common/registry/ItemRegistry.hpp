@@ -25,10 +25,10 @@ private:
 public:
     static inline Item INVALID; // Invalid Item
 
-    static Item AIR;
+    static inline Item AIR { "minecraft:air", -158 };
 
-    static Item ACACIA_BOAT;
-    static Item GLOW_BERRIES;
+    static inline Item ACACIA_BOAT { "minecraft:acacia_boat", 405 };
+    static inline Item GLOW_BERRIES { "minecraft:glow_berries", 796 };
 };
 
 #endif // !ITEMREGISTRY_HPP

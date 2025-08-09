@@ -21,10 +21,10 @@ public:
         : mIdentifier(identifier), mPossibleStates(possibleStates),
         mValue(!possibleStates.empty() ? possibleStates.at(0) : 0) {};
 
-    std::string identifier() const { return this->mIdentifier; };
+    const std::string& identifier() const { return this->mIdentifier; };
     int type() const { return this->mValue.index(); };
 
-    std::vector<StateType> getPossibleStates() const { return this->mPossibleStates; };
+    const std::vector<StateType>& getPossibleStates() const { return this->mPossibleStates; };
     void setPossibleStates(const std::vector<StateType>& states) { this->mPossibleStates = states; };
 
     StateType getValue() const { return this->mValue; };

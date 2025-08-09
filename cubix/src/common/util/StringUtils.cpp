@@ -22,7 +22,9 @@ bool Util::isNumber(const std::string& input) {
     if (input.empty())
         return false;
 
-    return std::ranges::all_of(input, std::isdigit);
+    return std::ranges::all_of(input, [](unsigned char c) {
+        return std::isdigit(c);
+    });
 };
 
 std::string Util::toLower(const std::string& value)
@@ -30,7 +32,9 @@ std::string Util::toLower(const std::string& value)
     std::string out = value;
     std::ranges::transform(
         out, out.begin(),
-        [](const unsigned char c) { return std::tolower(c); }
+        [](const unsigned char c) {
+            return std::tolower(c);
+        }
     );
 
     return out;
