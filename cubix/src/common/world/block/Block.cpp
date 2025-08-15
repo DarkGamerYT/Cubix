@@ -48,12 +48,12 @@ int32_t Block::hash(const Block& block)
     Nbt::write(stream, root->copy());
 
     const std::vector<uint8_t>& data = stream.mStream;
-    auto hash = static_cast<int32_t>(0x811C9DC5);
+    uint32_t hash = 0x811C9DC5u;
     for (const uint8_t byte : data)
     {
         hash ^= byte & 0xff;
         hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
     };
 
-    return hash;
+    return static_cast<int32_t>(hash);
 };

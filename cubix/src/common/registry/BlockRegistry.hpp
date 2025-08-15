@@ -12,15 +12,15 @@ class BlockRegistry
 {
 private:
     static inline std::vector<std::pair<std::string, Block>> sBlocks{};
-    static inline std::unordered_map<int32_t, BlockDescriptor> sPermutations{};
+    static inline std::unordered_map<int32_t, std::unique_ptr<BlockDescriptor>> sPermutations{};
 
 public:
     static void initialize();
 
     static void registerBlock(Block& block, bool registerItem = true);
 
-    static std::vector<BlockDescriptor> getAll();
-    static const BlockDescriptor& getPermutation(int32_t hash);
+    static std::vector<std::unique_ptr<BlockDescriptor>> getAll();
+    static const std::unique_ptr<BlockDescriptor>& getPermutation(int32_t hash);
     static int32_t getBlockHash(const BlockDescriptor&);
 
 private:

@@ -4,13 +4,13 @@
 #include "CompoundTagVariant.hpp"
 #include "../util/StringUtils.hpp"
 
-typedef std::unordered_map<std::string, Nbt::CompoundTagVariant> TagMap;
+typedef std::map<std::string, Nbt::CompoundTagVariant> TagMap;
 namespace Nbt
 {
     class CompoundTag final : public Nbt::Tag, public TagMap
     {
     public:
-        using TagMap::unordered_map;
+        using TagMap::map;
 
         template <std::derived_from<Nbt::Tag> T>
         CompoundTag& add(const std::string& name, const T& tag)

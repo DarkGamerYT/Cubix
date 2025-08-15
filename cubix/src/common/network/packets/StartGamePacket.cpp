@@ -31,14 +31,14 @@ void StartGamePacket::write(BinaryStream& stream)
     stream.writeUnsignedVarInt(static_cast<uint32_t>(blocks.size()));
     for (const auto& block : blocks)
     {
-        stream.writeString<Endianness::NetworkEndian>(block.getIdentifier());
+        stream.writeString<Endianness::NetworkEndian>(block->getIdentifier());
 
         Nbt::CompoundTag root;
         root.add("molangVersion", Nbt::IntTag(static_cast<int32_t>(MolangVersion::BeforeVersioning)));
 
         {
             Nbt::CompoundTag vanillaData;
-            vanillaData.add("block_id", Nbt::IntTag(block.getNetworkId()));
+            vanillaData.add("block_id", Nbt::IntTag(block->getNetworkId()));
             root.add("vanilla_block_data", vanillaData);
         };
 
@@ -51,7 +51,7 @@ void StartGamePacket::write(BinaryStream& stream)
 
         {
             Nbt::ListTag properties{ {}, Nbt::TagType::Compound };
-            for (auto& [key, value] : block.getStates())
+            for (auto& [key, value] : block->getStates())
             {
                 Nbt::CompoundTag stateTag;
                 stateTag.add("name", Nbt::StringTag(key));

@@ -59,9 +59,11 @@ bool ConnectionRequest::verify(const std::vector<std::string>& chains)
             if (bodyJson.HasMember("iat") && bodyJson["iat"].IsInt64())
                 this->issueUnixTime = bodyJson["iat"].GetInt64();
 
+            if (bodyJson.HasMember("titleId") && bodyJson["titleId"].IsString())
+                this->mTitleId = extraData["titleId"].GetString();
+
             const auto& identity = extraData["identity"].GetString();
             this->mIdentity = Util::UUID::fromString(identity);
-            this->mTitleId = extraData["titleId"].GetString();
             this->mDisplayName = extraData["displayName"].GetString();
             this->mXuid = extraData["XUID"].GetString();
         };

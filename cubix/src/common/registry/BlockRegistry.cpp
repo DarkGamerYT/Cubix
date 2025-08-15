@@ -40,23 +40,23 @@ void BlockRegistry::registerBlock(Block& block, const bool registerItem) {
     BlockRegistry::hashBlockStates(block);
 };
 
-std::vector<BlockDescriptor> BlockRegistry::getAll() {
-    std::vector<BlockDescriptor> blocks;
+std::vector<std::unique_ptr<BlockDescriptor>> BlockRegistry::getAll() {
+    std::vector<std::unique_ptr<BlockDescriptor>> blocks;
     blocks.reserve(sBlocks.size());
 
-    for (const auto &block: BlockRegistry::sBlocks | std::views::values)
-        blocks.emplace_back(std::make_shared<Block>(block));
+    for (const auto& block: BlockRegistry::sBlocks | std::views::values)
+        blocks.emplace_back(std::make_unique<BlockDescriptor>(block));
 
     return blocks;
 };
 
-const BlockDescriptor& BlockRegistry::getPermutation(const int32_t hash) {
+const std::unique_ptr<BlockDescriptor>& BlockRegistry::getPermutation(const int32_t hash) {
     return BlockRegistry::sPermutations[hash];
 };
 
 int32_t BlockRegistry::getBlockHash(const BlockDescriptor& descriptor) {
     const auto it = std::ranges::find_if(sPermutations, [&](const auto& pair) {
-        return pair.second.getIdentifier() == descriptor.getIdentifier();;
+        return pair.second->getIdentifier() == descriptor.getIdentifier();
     });
 
     if (it == sPermutations.end())
@@ -101,7 +101,7 @@ void BlockRegistry::hashBlockStates(Block& block)
             blockDescriptor.setState(newState);
         };
 
-        sPermutations[blockDescriptor.hash()] = blockDescriptor;
+        sPermutations[blockDescriptor.hash()] = std::make_unique<BlockDescriptor>(blockDescriptor);
 
         // Increment indices
         size_t k = keys.size();

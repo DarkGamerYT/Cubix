@@ -79,7 +79,7 @@ void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
         stream.writeInt(static_cast<int32_t>(mPalettes.size()));
     };
         
-    for (const auto &state: mPalettes | std::views::values)
+    for (const int state : mPalettes | std::views::values)
     {
         if (isNetwork)
         {
@@ -88,7 +88,7 @@ void BlockStorage::serialize(BinaryStream& stream, const bool isNetwork)
         };
 
         // Nbt stuff
-        const BlockDescriptor& block = BlockRegistry::getPermutation(state);
-        Nbt::write(stream, block.serialise()->copy());
+        const auto& block = BlockRegistry::getPermutation(state);
+        Nbt::write(stream, block->serialise()->copy());
     };
 };
