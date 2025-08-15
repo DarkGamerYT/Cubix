@@ -108,8 +108,10 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/common")
 
 if (WIN32)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/win")
-elseif (UNIX)
+elseif (UNIX AND NOT APPLE)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/linux")
+elseif (APPLE)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src/apple")
 endif()
 
 # src-server
@@ -117,6 +119,8 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/common")
 
 if (WIN32)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/win")
-elseif (UNIX)
+elseif (UNIX AND NOT APPLE)
     add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/linux")
+elseif (APPLE)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/cubix/src-server/apple")
 endif()
