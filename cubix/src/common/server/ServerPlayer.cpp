@@ -22,8 +22,8 @@ void ServerPlayer::doInitialSpawn() {
     StartGamePacket startGame;
     startGame.levelSettings = this->mLevel->getLevelSettings();
 
-    startGame.targetUniqueId = 1;
-    startGame.targetRuntimeId = 1;
+    startGame.actorUniqueId = this->getUniqueId();
+    startGame.actorRuntimeId = this->getRuntimeId();
     startGame.actorGameType = GameType::Default;
 
     startGame.position = { 0, -59, 0 };
@@ -71,16 +71,6 @@ void ServerPlayer::doInitialSpawn() {
     this->sendNetworkPacket(spawnPlayStatus);
 
     this->tick();
-
-    // Player list
-    /*const auto& clients = this->m_NetworkHandler->getPlayers().at(this->m_NetworkPeer->getNetworkIdentifier());
-    const auto& player = clients.at(this->m_SubClientId);
-
-    PlayerListPacket playerList;
-    playerList.action = PlayerListPacket::Action::Add;
-    playerList.players.emplace_back(player);*/
-
-    //this->m_NetworkHandler->sendPacket(playerList);
 };
 
 template <typename T, std::size_t N>
@@ -123,8 +113,6 @@ void ServerPlayer::tick() {
     const auto& worker = [&](const size_t start, const size_t end) {
         for (size_t i = start; i < end; ++i) {
             const auto& pos = chunkPositions[i];
-            std::cout << pos.toString() << std::endl;
-
             const size_t index = &pos - chunkPositions.data();
 
             // Chunk data stuff
@@ -159,8 +147,8 @@ void ServerPlayer::tick() {
         };
     };
 
-    size_t threadCount = std::thread::hardware_concurrency();
-    size_t blockSize = (chunkPositions.size() + threadCount - 1) / threadCount;
+    const size_t threadCount = std::thread::hardware_concurrency();
+    const size_t blockSize = (chunkPositions.size() + threadCount - 1) / threadCount;
 
     std::vector<std::future<void>> futures;
     for (size_t t = 0; t < threadCount; ++t) {

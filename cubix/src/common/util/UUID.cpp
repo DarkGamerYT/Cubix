@@ -59,8 +59,7 @@ namespace Util
 
     UUID UUID::randomUUID()
     {
-        static std::random_device rd;
-        static std::mt19937_64 gen(rd());
+        static std::mt19937_64 gen(std::random_device{}());
         std::uniform_int_distribution<uint64_t> distrib;
 
         uint64_t mostSignificantBits = distrib(gen);

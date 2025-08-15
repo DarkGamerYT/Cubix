@@ -65,6 +65,86 @@ std::vector<std::shared_ptr<ServerPlayer>> ServerNetworkHandler::getPlayers() co
     return players;
 };
 
+std::shared_ptr<ServerPlayer> ServerNetworkHandler::createNewPlayer(
+    const NetworkIdentifier& networkIdentifier,
+    SubClientId subClientId,
+    std::unique_ptr<ConnectionRequest>& connectionRequest
+) {
+    const std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
+    const auto& player = std::make_shared<ServerPlayer>(
+        this->mLevel,
+        networkPeer, this,
+        connectionRequest, subClientId);
+
+    if (player == nullptr)
+    {
+        this->disconnectClient(
+            networkIdentifier, subClientId,
+            DisconnectReason::InvalidPlayer, false, "%disconnectionScreen.connectionLost");
+        return nullptr;
+    };
+
+    const auto& connection = player->getConnection();
+    const auto& actorUniqueId = ActorUniqueId::fromUUID(connection->getSelfSignedId());
+    player->setUniqueId(actorUniqueId);
+
+    try {
+        SerializedSkin skin{ connection };
+        player->updateSkin(skin);
+    }
+    catch (...)
+    {
+        this->disconnectClient(
+            networkIdentifier, subClientId,
+            DisconnectReason::SkinIssue,
+            false, "disconnectionScreen.invalidSkin");
+        return nullptr;
+    };
+
+    {
+        PlayerListPacket playerList;
+        playerList.action = PlayerListPacket::Action::Add;
+        playerList.players.emplace_back(player);
+
+        this->sendPacket(playerList);
+    };
+
+    auto& clients = this->mPlayers.try_emplace(networkIdentifier).first->second;
+    clients[subClientId] = player;
+    return player;
+};
+
+std::shared_ptr<ServerPlayer> ServerNetworkHandler::getServerPlayer(const NetworkIdentifier& networkIdentifier, const SubClientId subClientId) {
+    if (!this->mPlayers.contains(networkIdentifier))
+        return nullptr;
+
+    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[subClientId];
+    if (player == nullptr)
+        return nullptr;
+
+    return player;
+};
+std::shared_ptr<ServerPlayer> ServerNetworkHandler::getPlayer(const NetworkIdentifier& networkIdentifier, const SubClientId subClientId, const ActorUniqueId& uniqueId) {
+    const auto& player = this->getServerPlayer(networkIdentifier, subClientId);
+    if (player == nullptr)
+        return nullptr;
+
+    if (player->getUniqueId() != uniqueId)
+        return nullptr;
+
+    return player;
+};
+std::shared_ptr<ServerPlayer> ServerNetworkHandler::getPlayer(const NetworkIdentifier& networkIdentifier, const SubClientId subClientId, const ActorRuntimeId& runtimeId) {
+    const auto& player = this->getServerPlayer(networkIdentifier, subClientId);
+    if (player == nullptr)
+        return nullptr;
+
+    if (player->getRuntimeId() != runtimeId)
+        return nullptr;
+
+    return player;
+};
+
 void ServerNetworkHandler::shutdown() {
     for (const auto &clients: this->mPlayers | std::views::values)
     {
@@ -116,13 +196,13 @@ void ServerNetworkHandler::onTick(uint32_t nTick)
 
 void ServerNetworkHandler::onTickPlayers(uint32_t nTick) {
     std::thread([this, nTick] {
-        for (const auto& client : this->mPlayers | std::views::values)
-            for (const auto& player : client | std::views::values)
-            {
-                if (player == nullptr || !player->isPlayerInitialized())
-                    continue;
+        for (const auto& player : this->getPlayers())
+        {
+            if (!player->isPlayerInitialized())
+                continue;
 
-            };
+            // player->tick();
+        };
     }).detach();
 };
 
@@ -175,12 +255,9 @@ void ServerNetworkHandler::disconnectClient(
     networkPeer->sendPacket(subClientId, disconnectPacket);
 };
 
-void ServerNetworkHandler::sendPacket(Packet& packet) {
-    for (const auto& subClients: this->mPlayers | std::views::values)
-        for (const auto& player: subClients | std::views::values)
-        {
-            player->sendNetworkPacket(packet);
-        };
+void ServerNetworkHandler::sendPacket(Packet& packet) const {
+    for (const auto& player: this->getPlayers())
+        player->sendNetworkPacket(packet);
 };
 
 void ServerNetworkHandler::handle(
@@ -317,6 +394,15 @@ void ServerNetworkHandler::handle(
             case MinecraftPacketIds::PlayerAuthInputPacket:
             {
                 PlayerAuthInputPacket gamePacket;
+                gamePacket.setSubClientId(subClientTargetId);
+                gamePacket.read(stream);
+
+                this->handle(networkIdentifier, gamePacket);
+                break;
+            };
+            case MinecraftPacketIds::Animate:
+            {
+                AnimatePacket gamePacket;
                 gamePacket.setSubClientId(subClientTargetId);
                 gamePacket.read(stream);
 
@@ -530,37 +616,8 @@ void ServerNetworkHandler::handle(
             packet.connectionRequest->getDisplayName(),
             packet.connectionRequest->getXuid(), packet.connectionRequest->getPlayFabId());
 
-    // Create a new player
-    this->mPlayers.insert_or_assign(networkIdentifier, Players{});
-    auto& clients = this->mPlayers.at(networkIdentifier);
-
-    clients.emplace(SubClientId::PrimaryClient,
-        std::make_shared<ServerPlayer>(
-            this->mLevel,
-            networkPeer, this,
-            packet.connectionRequest, SubClientId::PrimaryClient));
-
-    const auto& player = clients.at(SubClientId::PrimaryClient);
-    if (player == nullptr)
-    {
-        this->disconnectClient(
-            networkIdentifier, SubClientId::PrimaryClient,
-            DisconnectReason::InvalidPlayer, false, "%disconnectionScreen.connectionLost");
+    if (this->createNewPlayer(networkIdentifier, SubClientId::PrimaryClient, packet.connectionRequest) == nullptr)
         return;
-    };
-
-    try {
-        SerializedSkin skin{ player->getConnection() };
-        player->updateSkin(skin);
-    }
-    catch (...)
-    {
-        this->disconnectClient(
-            networkIdentifier, SubClientId::PrimaryClient,
-            DisconnectReason::SkinIssue,
-            false, "disconnectionScreen.invalidSkin");
-        return;
-    };
 
     // Encryption
     /*ServerToClientHandshakePacket serverToClientHandshake;
@@ -591,7 +648,7 @@ void ServerNetworkHandler::handle(
         return;
 
     const auto subClientId = packet.getSubClientId();
-    std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
+    const std::shared_ptr<NetworkPeer>& networkPeer = this->mConnections.at(networkIdentifier);
 
     const bool useOnlineAuthentication = this->mRequireOnlineAuthentication;
     if (useOnlineAuthentication && packet.chains.size() != 3 || packet.chains.empty())
@@ -645,35 +702,9 @@ void ServerNetworkHandler::handle(
 
     networkPeer->sendPacket(subClientId, playStatus);
 
-    // Create a new player
-    auto& clients = this->mPlayers.at(networkIdentifier);
-    clients.insert_or_assign(subClientId,
-        std::make_shared<ServerPlayer>(
-            this->mLevel,
-            networkPeer, this,
-            packet.connectionRequest, subClientId));
-
-    const auto& player = clients.at(subClientId);
+    const auto& player = this->createNewPlayer(networkIdentifier, subClientId, packet.connectionRequest);
     if (player == nullptr)
-    {
-        this->disconnectClient(
-            networkIdentifier, subClientId,
-            DisconnectReason::InvalidPlayer, false, "%disconnectionScreen.connectionLost");
         return;
-    };
-
-    try {
-        SerializedSkin skin{ player->getConnection() };
-        player->updateSkin(skin);
-    }
-    catch (...)
-    {
-        this->disconnectClient(
-            networkIdentifier, subClientId,
-            DisconnectReason::SkinIssue,
-            false, "disconnectionScreen.invalidSkin");
-        return;
-    };
 
     // Initial spawn
     player->doInitialSpawn();
@@ -683,10 +714,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ClientToServerHandshakePacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -703,10 +731,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ClientCacheStatusPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -717,10 +742,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ResourcePackClientResponsePacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -773,10 +795,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     SetLocalPlayerAsInitializedPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -787,10 +806,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     TextPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -812,10 +828,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     InteractPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -835,10 +848,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     ContainerClosePacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -849,10 +859,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     RequestChunkRadiusPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -872,10 +879,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     PlayerSkinPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -906,10 +910,7 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     CommandRequestPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
@@ -943,12 +944,23 @@ void ServerNetworkHandler::handle(
     NetworkIdentifier& networkIdentifier,
     PlayerAuthInputPacket& packet
 ) {
-    if (!this->mPlayers.contains(networkIdentifier))
-        return;
-
-    const std::shared_ptr<ServerPlayer>& player = this->mPlayers.at(networkIdentifier)[packet.getSubClientId()];
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
     if (player == nullptr)
         return;
 
     player->moveTo(packet.position, packet.rotation);
+};
+
+void ServerNetworkHandler::handle(
+    NetworkIdentifier& networkIdentifier,
+    AnimatePacket& packet
+) {
+    const std::shared_ptr<ServerPlayer>& player = this->getServerPlayer(networkIdentifier, packet.getSubClientId());
+    if (player == nullptr)
+        return;
+
+    if (packet.action != AnimateAction::Swing)
+        return;
+
+    this->sendPacket(packet);
 };

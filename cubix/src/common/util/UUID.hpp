@@ -18,7 +18,7 @@ namespace Util
             : mMostSignificantBits(mostSignificantBits), mLeastSignificantBits(leastSignificantBits) {};
 
         uint64_t getMostSignificantBits() const { return this->mMostSignificantBits; };
-        uint64_t getLeastSignificantBits() const { return this->mMostSignificantBits; };
+        uint64_t getLeastSignificantBits() const { return this->mLeastSignificantBits; };
 
         std::string toString() const;
         static bool canParse(const std::string&);

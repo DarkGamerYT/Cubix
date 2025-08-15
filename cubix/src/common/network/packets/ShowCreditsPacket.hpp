@@ -1,6 +1,8 @@
 #pragma once
 #include "../Packet.hpp"
 
+#include "../../world/actor/ActorRuntimeId.hpp"
+
 class ShowCreditsPacket final : public Packet
 {
 public:
@@ -10,7 +12,7 @@ public:
         Finished = 1
     };
 
-    int64_t playerRuntimeId;
+    ActorRuntimeId playerRuntimeId;
     CreditsState state;
 
 public:

@@ -4,7 +4,7 @@
 class SetHealthPacket final : public Packet
 {
 public:
-    int32_t health;
+    int32_t health = 20;
 
 public:
     SetHealthPacket()

@@ -21,6 +21,9 @@ private:
     std::string mXuid;
     Util::UUID mIdentity{ 0, 0 };
     int64_t issueUnixTime = -1;
+    Util::UUID mDeviceId;
+    bool mIsSubClient = false;
+    Util::UUID mSelfSignedId;
 
     std::string mRawHeader;
     rapidjson::Document mHeader;
@@ -39,12 +42,13 @@ public:
 
     const rapidjson::Value& data() const { return this->mData; };
 
+    bool isSubClient() const { return this->mIsSubClient; };
+
     std::string getPlayFabId() const {
         return this->mData["PlayFabId"].GetString();
     };
-    std::string getDeviceId() const {
-        return this->mData["DeviceId"].GetString();
-    };
+    Util::UUID getDeviceId() const { return this->mDeviceId; };
+    Util::UUID getSelfSignedId() const { return this->mSelfSignedId; };
     int getBuildPlatform() const {
         return this->mData["DeviceOS"].GetInt();
     };

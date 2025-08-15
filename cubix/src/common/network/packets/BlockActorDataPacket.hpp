@@ -1,5 +1,6 @@
 #pragma once
 #include "../Packet.hpp"
+
 #include "../../nbt/NbtIo.hpp"
 
 class BlockActorDataPacket final : public Packet

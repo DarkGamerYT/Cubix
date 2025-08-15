@@ -1,6 +1,8 @@
 #ifndef NETWORKPEER_HPP
 #define NETWORKPEER_HPP
 
+#include <utility>
+
 #include "../connection/CompressionType.hpp"
 #include "../Packet.hpp"
 #include "NetworkIdentifier.hpp"
@@ -25,7 +27,7 @@ public:
 
 protected:
     NetworkIdentifier mNetworkIdentifier;
-    NetworkServer* mNetworkServer;
+    NetworkServer* mNetworkServer{};
 
 public:
     CompressionType mCompression = CompressionType::Disabled;
@@ -33,8 +35,8 @@ public:
 
 public:
     NetworkPeer() = default;
-    NetworkPeer(const NetworkIdentifier& networkIdentifier, NetworkServer* serverLocator)
-        : mNetworkIdentifier(networkIdentifier), mNetworkServer(serverLocator) {};
+    NetworkPeer(NetworkIdentifier networkIdentifier, NetworkServer* serverLocator)
+        : mNetworkIdentifier(std::move(networkIdentifier)), mNetworkServer(serverLocator) {};
 
     BinaryStream& receivePacket(BinaryStream&) const;
 

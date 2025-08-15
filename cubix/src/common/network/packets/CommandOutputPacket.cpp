@@ -1,25 +1,38 @@
 #include "CommandOutputPacket.hpp"
 void CommandOutputPacket::read(BinaryStream& stream)
 {
-    {
-        // Command origin stuff
-        const auto type = static_cast<CommandOriginType>(stream.readUnsignedVarInt());
-        const Util::UUID& commandUUID = stream.readUUID();
-        const std::string& requestId = stream.readString<Endianness::NetworkEndian>();
+    this->commandOrigin = BinaryStream::serialize<CommandOrigin>::read(stream);
 
-        this->commandOrigin = std::make_unique<CommandOrigin>(type, nullptr, commandUUID, requestId);
-        if (type == CommandOriginType::DevConsole || type == CommandOriginType::Test)
-        {
-            this->commandOrigin->setPlayerId(stream.readSignedVarLong());
-        };
+    const auto type = static_cast<CommandOutputType>(stream.readByte());
+    this->commandOutput = CommandOutput{ type };
+
+    stream.readUnsignedVarInt(); // Success count
+
+    const uint32_t size = stream.readUnsignedVarInt();
+    for (uint32_t i = 0; i < size; i++)
+    {
+        const bool isSuccessful = stream.readBoolean();
+        const auto& message = stream.readString<Endianness::NetworkEndian>();
+
+        std::vector<std::string> parameters;
+
+        const uint32_t parameterSize = stream.readUnsignedVarInt();
+        for (uint32_t j = 0; j < parameterSize; j++)
+            parameters.emplace_back(stream.readString<Endianness::NetworkEndian>());
+
+        if (isSuccessful)
+            this->commandOutput.success(message, parameters);
+        else
+            this->commandOutput.error(message, parameters);
     };
 
-    // TODO: Read command output
+    if (this->commandOutput.wantsData())
+        stream.readString<Endianness::NetworkEndian>();
 };
 
 void CommandOutputPacket::write(BinaryStream& stream)
 {
-    this->commandOrigin->writeNetwork(stream);
+    BinaryStream::serialize<CommandOrigin>::write(this->commandOrigin, stream);
 
     stream.writeByte(static_cast<uint8_t>(this->commandOutput.getType()));
     stream.writeUnsignedVarInt(this->commandOutput.getSuccessCount());
@@ -32,13 +45,9 @@ void CommandOutputPacket::write(BinaryStream& stream)
 
         stream.writeUnsignedVarInt(static_cast<uint32_t>(parameters.size()));
         for (const std::string& parameter : parameters)
-        {
             stream.writeString<Endianness::NetworkEndian>(parameter);
-        };
     };
 
-    if (this->commandOutput.getType() == CommandOutputType::DataSet)
-    {
+    if (this->commandOutput.wantsData())
         stream.writeString<Endianness::NetworkEndian>(this->commandOutput.getData());
-    };
 };

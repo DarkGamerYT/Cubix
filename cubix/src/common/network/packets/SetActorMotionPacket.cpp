@@ -1,14 +1,14 @@
 #include "SetActorMotionPacket.hpp"
 void SetActorMotionPacket::read(BinaryStream& stream)
 {
-    this->actorRuntimeId = stream.readSignedVarLong();
+    this->actorRuntimeId = BinaryStream::serialize<ActorRuntimeId>::read(stream);
     this->position = stream.readVec3();
     this->tick = stream.readUnsignedVarLong();
 };
 
 void SetActorMotionPacket::write(BinaryStream& stream)
 {
-    stream.writeSignedVarLong(this->actorRuntimeId);
+    BinaryStream::serialize<ActorRuntimeId>::write(this->actorRuntimeId, stream);
     stream.writeVec3(this->position);
     stream.writeUnsignedVarLong(this->tick);
 };

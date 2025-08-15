@@ -5,7 +5,7 @@
 class SetPlayerGameTypePacket final : public Packet
 {
 public:
-    GameType gameType;
+    GameType gameType = GameType::Default;
 
 public:
     SetPlayerGameTypePacket()

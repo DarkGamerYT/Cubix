@@ -37,13 +37,12 @@ public:
             | this->revision()
         );
     };
-
     static GameVersion decode(const uint32_t version)
     {
-        uint16_t major = (version >> 24) & 0xFF;
-        uint16_t minor = (version >> 16) & 0xFF;
-        uint16_t patch = (version >> 8) & 0xFF;
-        uint16_t revision = (version) & 0xFF;
+        const uint16_t major = (version >> 24) & 0xFF;
+        const uint16_t minor = (version >> 16) & 0xFF;
+        const uint16_t patch = (version >> 8) & 0xFF;
+        const uint16_t revision = (version) & 0xFF;
         return GameVersion{ major, minor, patch, revision };
     };
 

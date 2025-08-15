@@ -1,10 +1,12 @@
 #pragma once
 #include "../Packet.hpp"
 
+#include "../../world/actor/ActorRuntimeId.hpp"
+
 class SetLocalPlayerAsInitializedPacket final : public Packet
 {
 public:
-    int64_t playerRuntimeId;
+    ActorRuntimeId playerRuntimeId;
 
 public:
     SetLocalPlayerAsInitializedPacket()

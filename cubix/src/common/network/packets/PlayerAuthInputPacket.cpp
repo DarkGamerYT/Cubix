@@ -43,7 +43,7 @@ void PlayerAuthInputPacket::read(BinaryStream& stream)
     if (std::ranges::find(this->inputData, AuthInputData::IsInClientPredictedVehicle) != this->inputData.end())
     {
         this->vehicleRotation = stream.readVec2();
-        this->predictedVehicle = stream.readSignedVarLong();
+        this->predictedVehicle = BinaryStream::serialize<ActorUniqueId>::read(stream);
     };
 
     this->analogMoveVector = stream.readVec2();

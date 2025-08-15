@@ -12,6 +12,8 @@
 #include "../../nbt/CompoundTag.hpp"
 #include "../../nbt/NbtIo.hpp"
 #include "../../world/GameMode.hpp"
+#include "../../world/actor/ActorRuntimeId.hpp"
+#include "../../world/actor/ActorUniqueId.hpp"
 #include "../../world/level/LevelSettings.hpp"
 
 struct SyncedPlayerMovementSettings
@@ -28,8 +30,8 @@ struct NetworkPermissions
 class StartGamePacket final : public Packet
 {
 public:
-    int64_t targetUniqueId;
-    uint64_t targetRuntimeId;
+    ActorUniqueId actorUniqueId{ -1 };
+    ActorRuntimeId actorRuntimeId{ 0 };
     GameType actorGameType;
     Vec3 position;
     Vec2 rotation;

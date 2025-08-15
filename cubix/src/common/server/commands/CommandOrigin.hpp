@@ -10,11 +10,13 @@
 
 class ServerInstance;
 class CommandOrigin {
+    friend struct BinaryStream::serialize<CommandOrigin>;
+
 private:
     CommandOriginType mType;
     std::string mRequestId;
-    Util::UUID mUuid;
-    int64_t mPlayerId = 0;
+    Util::UUID mUUID;
+    ActorUniqueId mPlayerId{ -1 };
     ServerInstance* mServerInstance;
 
 public:
@@ -24,19 +26,18 @@ public:
         const CommandOriginType type,
         ServerInstance* serverInstance,
         const Util::UUID& uuid,
-        const std::string& requestId
-    ) : mType(type), mRequestId(requestId), mUuid(uuid), mServerInstance(serverInstance) {};
+        const std::string& requestId,
+        const ActorUniqueId& playerId = ActorUniqueId{ -1 }
+    ) : mType(type), mRequestId(requestId), mUUID(uuid), mServerInstance(serverInstance), mPlayerId(playerId) {};
 
     CommandOriginType getType() const { return this->mType; };
     const std::string& getRequestId() const { return this->mRequestId; };
-    const Util::UUID& getUUID() const { return this->mUuid; };
+    const Util::UUID& getUUID() const { return this->mUUID; };
 
-    void setPlayerId(const int64_t playerId) { this->mPlayerId = playerId; };
-    int64_t getPlayerId() const { return this->mPlayerId; };
+    void setPlayerId(const ActorUniqueId& playerId) { this->mPlayerId = playerId; };
+    const ActorUniqueId& getPlayerId() const { return this->mPlayerId; };
 
     ServerInstance* getServerInstance() const { return this->mServerInstance; };
-
-    virtual void writeNetwork(BinaryStream& stream);
 };
 
 class PlayerCommandOrigin final : public CommandOrigin {
@@ -52,6 +53,22 @@ public:
         mPlayer(player) {};
 
     const std::shared_ptr<Player>& getPlayer() const { return this->mPlayer; };
+};
+
+template <>
+struct BinaryStream::serializeTraits<CommandOrigin> {
+    using readType = std::unique_ptr<CommandOrigin>;
+    using writeType = const std::unique_ptr<CommandOrigin>&;
+};
+
+template <>
+struct BinaryStream::serialize<CommandOrigin> {
+    using traits   = BinaryStream::serializeTraits<CommandOrigin>;
+    using readType = traits::readType;
+    using writeType = traits::writeType;
+
+    static readType read(BinaryStream& stream);
+    static void write(writeType value, BinaryStream& stream);
 };
 
 #endif //COMMANDORIGIN_HPP

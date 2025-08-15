@@ -6,8 +6,8 @@ void StartGamePacket::read(BinaryStream& stream)
 
 void StartGamePacket::write(BinaryStream& stream)
 {
-    stream.writeSignedVarLong(this->targetUniqueId);
-    stream.writeUnsignedVarLong(this->targetRuntimeId);
+    BinaryStream::serialize<ActorUniqueId>::write(this->actorUniqueId, stream);
+    BinaryStream::serialize<ActorRuntimeId>::write(this->actorRuntimeId, stream);
     stream.writeSignedVarInt(static_cast<int>(this->actorGameType));
 
     stream.writeVec3(this->position);

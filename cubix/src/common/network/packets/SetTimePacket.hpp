@@ -4,7 +4,7 @@
 class SetTimePacket final : public Packet
 {
 public:
-    int32_t time;
+    int32_t time = 0;
 
 public:
     SetTimePacket()

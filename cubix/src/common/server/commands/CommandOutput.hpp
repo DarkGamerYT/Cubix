@@ -26,22 +26,9 @@ public:
     const std::vector<CommandOutputMessage>& getMessages() const { return this->mMessages; };
 
     bool hasErrorMessage() const;
-    void addMessage(
-        const std::string& message,
-        const std::vector<std::string>& parameters = {},
-        const bool hasError = false
-    ) {
-        this->mMessages.emplace_back(!hasError, message, parameters);
-    };
 
-    void error(const std::string& message, const std::vector<std::string>& parameters = {})
-    {
-        this->addMessage(message, parameters, true);
-    };
-    void success(const std::string& message, const std::vector<std::string>& parameters = {})
-    {
-        this->addMessage(message, parameters);
-    };
+    void error(const std::string& message, const std::vector<std::string>& parameters = {});
+    void success(const std::string& message, const std::vector<std::string>& parameters = {});
 };
 
 #endif //COMMANDOUTPUT_HPP

@@ -232,16 +232,14 @@ public:
         return { x, y };
     };
 
-    BlockPos readNetworkBlockPosition() {
-        auto x = static_cast<double>(this->readSignedVarInt());
-        auto y = static_cast<double>(this->readUnsignedVarInt());
-        auto z = static_cast<double>(this->readSignedVarInt());
-
-        return { x, y, z };
-    };
+    template<Endianness E = Endianness::LittleEndian>
     BlockPos readBlockPosition() {
         auto x = static_cast<double>(this->readSignedVarInt());
-        auto y = static_cast<double>(this->readSignedVarInt());
+        double y;
+        if constexpr (E == Endianness::NetworkEndian)
+            y = static_cast<double>(this->readUnsignedVarInt());
+        else
+            y = static_cast<double>(this->readSignedVarInt());
         auto z = static_cast<double>(this->readSignedVarInt());
 
         return { x, y, z };
@@ -376,25 +374,23 @@ public:
         this->write<float>(static_cast<float>(vec.y));
     };
 
-    void writeNetworkBlockPosition(const int32_t x, const uint32_t y, const int32_t z) {
-        this->writeSignedVarInt(x);
-        this->writeUnsignedVarInt(y);
-        this->writeSignedVarInt(z);
-    };
-    void writeNetworkBlockPosition(const BlockPos& pos) {
-        this->writeSignedVarInt(pos.x);
-        this->writeUnsignedVarInt(static_cast<uint32_t>(pos.y));
-        this->writeSignedVarInt(pos.z);
-    };
-
+    template<Endianness E = Endianness::LittleEndian>
     void writeBlockPosition(const int x, const int y, const int z) {
         this->writeSignedVarInt(x);
-        this->writeSignedVarInt(y);
+        if constexpr (E == Endianness::NetworkEndian)
+            this->writeUnsignedVarInt(y);
+        else
+            this->writeSignedVarInt(y);
         this->writeSignedVarInt(z);
     };
+
+    template<Endianness E = Endianness::LittleEndian>
     void writeBlockPosition(const BlockPos& pos) {
         this->writeSignedVarInt(pos.x);
-        this->writeSignedVarInt(pos.y);
+        if constexpr (E == Endianness::NetworkEndian)
+            this->writeUnsignedVarInt(pos.y);
+        else
+            this->writeSignedVarInt(pos.y);
         this->writeSignedVarInt(pos.z);
     };
 

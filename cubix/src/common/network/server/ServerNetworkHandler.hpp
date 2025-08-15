@@ -52,6 +52,8 @@
 #include "../packets/CommandOutputPacket.hpp"
 #include "../packets/ServerboundLoadingScreenPacket.hpp"
 #include "../packets/PlayerAuthInputPacket.hpp"
+#include "../packets/AnimatePacket.hpp"
+#include "../packets/PlayerListPacket.hpp"
 
 class ServerInstance;
 class ServerNetworkHandler
@@ -108,7 +110,7 @@ public:
     void onConnect(NetworkIdentifier&);
     void onDisconnect(const NetworkIdentifier&);
     void disconnectClient(const NetworkIdentifier&, SubClientId, DisconnectReason, bool skipMessage = true, const std::string & = "");
-    void sendPacket(Packet& packet);
+    void sendPacket(Packet& packet) const;
     void handle(NetworkIdentifier&, BinaryStream&);
 
     void handle(NetworkIdentifier&, RequestNetworkSettingsPacket&);
@@ -125,6 +127,14 @@ public:
     void handle(NetworkIdentifier&, PlayerSkinPacket&);
     void handle(NetworkIdentifier&, CommandRequestPacket&);
     void handle(NetworkIdentifier&, PlayerAuthInputPacket&);
+    void handle(NetworkIdentifier&, AnimatePacket&);
+
+private:
+    std::shared_ptr<ServerPlayer> createNewPlayer(const NetworkIdentifier&, SubClientId, std::unique_ptr<ConnectionRequest>&);
+
+    std::shared_ptr<ServerPlayer> getServerPlayer(const NetworkIdentifier&, SubClientId);
+    std::shared_ptr<ServerPlayer> getPlayer(const NetworkIdentifier&, SubClientId, const ActorUniqueId&);
+    std::shared_ptr<ServerPlayer> getPlayer(const NetworkIdentifier&, SubClientId, const ActorRuntimeId&);
 };
 
 #endif // !SERVERNETWORKHANDLER

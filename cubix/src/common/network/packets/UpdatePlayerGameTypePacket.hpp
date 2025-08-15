@@ -6,7 +6,7 @@ class UpdatePlayerGameTypePacket final : public Packet
 {
 public:
     GameType gameType = GameType::Survival;
-    int64_t playerActorId = 0;
+    int64_t playerActorUniqueId = 0;
     uint64_t tick = 0;
 
 public:

@@ -1,4 +1,10 @@
 #include "Actor.hpp"
+void Actor::setUniqueId(const ActorUniqueId& id) {
+    if (id.getValue() == 0)
+        return;
+
+    this->mUniqueId = id;
+};
 void Actor::move(const Vec3& position) {
     this->mVelocity = position - this->mPosition;
     this->mPosition = position;

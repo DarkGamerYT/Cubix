@@ -19,7 +19,7 @@ void BinaryStream::serialize<LevelSettings>::write(const LevelSettings& value, B
     stream.writeSignedVarInt(static_cast<int>(value.mGameType));
     stream.writeBoolean(value.mIsHardcode);
     stream.writeSignedVarInt(static_cast<int>(value.mDifficulty));
-    stream.writeNetworkBlockPosition(value.mDefaultSpawn);
+    stream.writeBlockPosition<Endianness::NetworkEndian>(value.mDefaultSpawn);
     stream.writeBoolean(value.mAchievementsDisabled);
 
     // Editor

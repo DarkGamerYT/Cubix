@@ -1,20 +1,17 @@
 #pragma once
 #include "../Packet.hpp"
+
+#include "../../world/actor/ActorRuntimeId.hpp"
 #include "../../world/phys/Vec3.hpp"
 
-enum class PlayerRespawnState
-{
-    SearchingForSpawn = 0,
-    ReadyToSpawn = 1,
-    ClientReadyToSpawn = 2
-};
+#include "types/PlayerRespawnState.hpp"
 
 class RespawnPacket final : public Packet
 {
 public:
     Vec3 position;
     PlayerRespawnState state;
-    uint64_t playerRuntimeId;
+    ActorRuntimeId playerRuntimeId;
 
 public:
     RespawnPacket()

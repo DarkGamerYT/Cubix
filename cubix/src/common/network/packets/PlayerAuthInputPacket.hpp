@@ -1,11 +1,12 @@
 #pragma once
 #include "../Packet.hpp"
+
 #include "../../input/InputMode.hpp"
 #include "../../input/InteractionModel.hpp"
 #include "../../input/PlayMode.hpp"
 #include "../../entity/PlayerBlockActionData.hpp"
-
 #include "../../util/BigUInt128.hpp"
+#include "../../world/actor/ActorUniqueId.hpp"
 #include "../../world/inventory/network/ItemStackRequestData.hpp"
 
 #include "types/AuthInputData.hpp"
@@ -28,7 +29,7 @@ public:
     std::unique_ptr<ItemStackRequestData> itemStackRequest;
     std::vector<PlayerBlockActionData> blockActionData;
     Vec2 vehicleRotation;
-    int64_t predictedVehicle;
+    ActorUniqueId predictedVehicle;
 
     Vec2 analogMoveVector;
     Vec3 cameraOrientation;

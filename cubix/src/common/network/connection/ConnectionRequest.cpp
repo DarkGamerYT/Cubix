@@ -19,6 +19,14 @@ ConnectionRequest::ConnectionRequest(const std::string& rawToken)
     if (this->mData.HasParseError() || !this->mData.IsObject())
         return;
 
+    const std::string& deviceId = this->mData["DeviceId"].GetString();
+    this->mDeviceId = Util::UUID::fromString(deviceId);
+
+    const std::string& selfSignedId = this->mData["SelfSignedId"].GetString();
+    this->mSelfSignedId = Util::UUID::fromString(selfSignedId);
+
+    this->mIsSubClient = this->mData.HasMember("PrimaryUser") && !this->mData["PrimaryUser"].GetBool();
+
     this->mSignature = parts[2];
     this->mIsValid = true;
 };

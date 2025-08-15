@@ -1,5 +1,7 @@
 #pragma once
 #include "../Packet.hpp"
+
+#include "../../world/actor/ActorRuntimeId.hpp"
 #include "../../world/phys/Vec3.hpp"
 
 class InteractPacket final : public Packet
@@ -15,7 +17,7 @@ public:
     };
 
     Action action;
-    uint64_t actorRuntimeId;
+    ActorRuntimeId actorRuntimeId{ 0 };
     Vec3 position;
 
 public:

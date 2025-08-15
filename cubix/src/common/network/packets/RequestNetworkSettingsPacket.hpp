@@ -4,7 +4,7 @@
 class RequestNetworkSettingsPacket final : public Packet
 {
 public:
-    uint32_t protocol;
+    uint32_t protocol = SharedConstants::NetworkProtocolVersion;
 
 public:
     RequestNetworkSettingsPacket()

@@ -1,10 +1,10 @@
 #include "SetLocalPlayerAsInitializedPacket.hpp"
 void SetLocalPlayerAsInitializedPacket::read(BinaryStream& stream)
 {
-    this->playerRuntimeId = stream.readSignedVarLong();
+    this->playerRuntimeId = BinaryStream::serialize<ActorRuntimeId>::read(stream);
 };
 
 void SetLocalPlayerAsInitializedPacket::write(BinaryStream& stream)
 {
-    stream.writeSignedVarLong(this->playerRuntimeId);
+    BinaryStream::serialize<ActorRuntimeId>::write(this->playerRuntimeId, stream);
 };

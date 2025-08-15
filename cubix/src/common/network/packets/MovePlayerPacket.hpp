@@ -3,6 +3,7 @@
 
 #include "../../world/phys/Vec3.hpp"
 #include "../../world/phys/Vec2.hpp"
+#include "../../world/actor/ActorRuntimeId.hpp"
 #include "../../world/actor/ActorType.hpp"
 
 enum class PositionMode : uint8_t {
@@ -23,13 +24,13 @@ enum class TeleportationCause {
 class MovePlayerPacket final : public Packet
 {
 public:
-    uint64_t actorRuntimeId;
+    ActorRuntimeId actorRuntimeId;
     Vec3 position;
     Vec2 rotation;
     float yHeadRotation;
     PositionMode positionMode;
     bool isOnGround;
-    uint64_t ridingRuntimeId;
+    ActorRuntimeId ridingRuntimeId;
     TeleportationCause teleportCause = TeleportationCause::Unknown;
     ActorType sourceActorType = ActorType::Player;
     uint64_t tick;

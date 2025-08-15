@@ -31,6 +31,8 @@ private:
 public:
     Player(const std::shared_ptr<Level>& level, SubClientId subClientId);
 
+    ActorType getType() const override { return ActorType::Player; };
+
     const std::string& getDisplayName() { return mDisplayName; };
     void setName(const std::string& name) { this->mDisplayName = name; };
 

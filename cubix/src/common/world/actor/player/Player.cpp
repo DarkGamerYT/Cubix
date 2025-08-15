@@ -23,7 +23,7 @@ void Player::tick() {
 
 void Player::openInventory() const {
     ContainerOpenPacket containerOpen;
-    containerOpen.actorUniqueId = 0;
+    containerOpen.actorUniqueId = this->getUniqueId();
     containerOpen.position = BlockPos{ 0.0, 0.0, 0.0 };
     containerOpen.containerId = 0;
     containerOpen.containerType = ContainerType::INVENTORY;

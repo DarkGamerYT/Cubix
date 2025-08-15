@@ -14,10 +14,10 @@ private:
 public:
     ServerPlayer(
         const std::shared_ptr<Level>& level,
-        const std::shared_ptr<NetworkPeer> &networkPeer, ServerNetworkHandler* networkHandler,
+        const std::shared_ptr<NetworkPeer>& networkPeer, ServerNetworkHandler* networkHandler,
         std::unique_ptr<ConnectionRequest>& connection, SubClientId subClientId);
 
-    std::unique_ptr<ConnectionRequest>& getConnection() { return mConnection; };
+    std::unique_ptr<ConnectionRequest>& getConnection() { return this->mConnection; };
 
     void markPlayerAsInitialized() { this->mIsPlayerInitialized = true; };
     bool isPlayerInitialized() const override {

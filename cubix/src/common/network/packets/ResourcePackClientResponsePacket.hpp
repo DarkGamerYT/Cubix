@@ -3,9 +3,9 @@
 
 enum class ResourcePackResponse
 {
-    Cancel = 1,
-    Downloading = 2,
-    DownloadingFinished = 3,
+    Cancel                    = 1,
+    Downloading               = 2,
+    DownloadingFinished       = 3,
     ResourcePackStackFinished = 4
 };
 
