@@ -16,6 +16,7 @@ void TextPacket::read(BinaryStream& stream)
         case TextType::SystemMessage:
         case TextType::TextObjectWhisper:
         case TextType::TextObject:
+        case TextType::TextObjectAnnouncement:
             this->message = stream.readString<Endianness::NetworkEndian>();
             break;
 
@@ -52,6 +53,7 @@ void TextPacket::write(BinaryStream& stream)
         case TextType::SystemMessage:
         case TextType::TextObjectWhisper:
         case TextType::TextObject:
+        case TextType::TextObjectAnnouncement:
             stream.writeString<Endianness::NetworkEndian>(this->message);
             break;
 

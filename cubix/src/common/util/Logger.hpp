@@ -4,8 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <print>
+#include <format>
 #include <string>
 #include <chrono>
+#include <vector>
 #include <mutex>
 #include <thread>
 #include <utility>
@@ -57,7 +59,7 @@ public:
     };
 
     template <typename... Args>
-#if __cpp_lib_format >= 202207L  // C++23 or newer
+#if __cplusplus >= 202302L  // C++23 or newer
     static void log(const LogLevel level, std::format_string<Args...> fmt, Args&&... args) {
         const std::string& message = std::format(fmt, std::forward<Args>(args)...);
 #else

@@ -2,6 +2,7 @@
 #define JSON_HPP
 
 #include <stdexcept>
+#include <string>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>

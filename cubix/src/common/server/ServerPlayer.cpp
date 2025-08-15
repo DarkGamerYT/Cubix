@@ -1,6 +1,6 @@
 #include "ServerPlayer.hpp"
 
-#include <execution>
+#include <future>
 
 #include "../network/server/ServerNetworkHandler.hpp"
 
@@ -119,9 +119,12 @@ void ServerPlayer::tick() {
     };
 
     std::vector<LevelChunkPacket> chunkPackets(chunkPositions.size());
-    std::for_each(
-        std::execution::par_unseq, chunkPositions.begin(), chunkPositions.end(),
-        [&](const ChunkPos& pos) {
+
+    const auto& worker = [&](const size_t start, const size_t end) {
+        for (size_t i = start; i < end; ++i) {
+            const auto& pos = chunkPositions[i];
+            std::cout << pos.toString() << std::endl;
+
             const size_t index = &pos - chunkPositions.data();
 
             // Chunk data stuff
@@ -153,7 +156,24 @@ void ServerPlayer::tick() {
             };
 
             chunkPackets[index] = levelChunk;
-    });
+        };
+    };
+
+    size_t threadCount = std::thread::hardware_concurrency();
+    size_t blockSize = (chunkPositions.size() + threadCount - 1) / threadCount;
+
+    std::vector<std::future<void>> futures;
+    for (size_t t = 0; t < threadCount; ++t) {
+        const size_t start = t * blockSize;
+        const size_t end = std::min(start + blockSize, chunkPositions.size());
+
+        futures.push_back(std::async(
+            std::launch::async,
+            worker, start, end));
+    };
+
+    for (auto &f : futures)
+        f.get();
 
     constexpr size_t batchSize = 12;
     for (size_t i = 0; i < chunkPackets.size(); i += batchSize)
