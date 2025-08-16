@@ -1,9 +1,9 @@
-/.vs
-/.DS_STORE
-/build
-/out
-/vcpkg_installed
+.vs/
+build/
+out/
 
-/.idea/*
-!/.idea/misc.xml
-!/.idea/icon.png
+**/.DS_STORE
+
+.idea/*
+!.idea/codeStyles
+!.idea/icon.png
